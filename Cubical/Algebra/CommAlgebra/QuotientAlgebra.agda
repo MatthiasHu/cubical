@@ -40,8 +40,8 @@ module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) (I : IdealsIn A) where
     _ : CommAlgebraStr _ _
     _ = snd A
 
-  _/_ : CommAlgebra R ℓ
-  _/_ = commAlgebraFromCommRing
+  _/_ : lockUnit {ℓ = ℓ} → CommAlgebra R ℓ
+  _/_ unlock = commAlgebraFromCommRing
            ((CommAlgebra→CommRing A) CommRing./ I)
            (λ r → elim (λ _ → squash/) (λ x → [ r ⋆ x ]) (eq r))
            (λ r s → elimProp (λ _ → squash/ _ _)
@@ -72,14 +72,14 @@ module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) (I : IdealsIn A) where
                     r ⋆ x - r ⋆ y ∎ )
                   (isCommIdeal.·Closed (snd I) _ x-y∈I))
 
-  quotientHom : CommAlgebraHom A (_/_)
-  fst quotientHom x = [ x ]
-  IsAlgebraHom.pres0 (snd quotientHom) = refl
-  IsAlgebraHom.pres1 (snd quotientHom) = refl
-  IsAlgebraHom.pres+ (snd quotientHom) _ _ = refl
-  IsAlgebraHom.pres· (snd quotientHom) _ _ = refl
-  IsAlgebraHom.pres- (snd quotientHom) _ = refl
-  IsAlgebraHom.pres⋆ (snd quotientHom) _ _ = refl
+  quotientHom : (key : lockUnit {ℓ = ℓ}) → CommAlgebraHom A (_/_ key)
+  fst (quotientHom unlock) x = [ x ]
+  IsAlgebraHom.pres0 (snd (quotientHom unlock)) = refl
+  IsAlgebraHom.pres1 (snd (quotientHom unlock)) = refl
+  IsAlgebraHom.pres+ (snd (quotientHom unlock)) _ _ = refl
+  IsAlgebraHom.pres· (snd (quotientHom unlock)) _ _ = refl
+  IsAlgebraHom.pres- (snd (quotientHom unlock)) _ = refl
+  IsAlgebraHom.pres⋆ (snd (quotientHom unlock)) _ _ = refl
 
 module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) (I : IdealsIn A) where
   open CommRingStr {{...}} hiding (_-_; -_; ·IdL; ·DistR+) renaming (_·_ to _·R_; _+_ to _+R_)
@@ -91,6 +91,7 @@ module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) (I : IdealsIn A) where
     _ : CommAlgebraStr _ _
     _ = snd A
 
+{-
   private
     LRing = CommAlgebra→Ring (A / I)
     RRing = (CommAlgebra→Ring A) Ring./ (CommIdeal→Ideal I)
@@ -109,12 +110,14 @@ module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) (I : IdealsIn A) where
   IsRingHom.pres+ (snd CommForget/) = elimProp2 (λ _ _ → isSetRing RRing _ _) (λ _ _ → refl)
   IsRingHom.pres· (snd CommForget/) = elimProp2 (λ _ _ → isSetRing RRing _ _) (λ _ _ → refl)
   IsRingHom.pres- (snd CommForget/) = elimProp (λ _ → isSetRing RRing _ _) (λ _ → refl)
+-}
 
   open IsAlgebraHom
-  inducedHom : (B : CommAlgebra R ℓ) (ϕ : CommAlgebraHom A B)
+  inducedHom : (key : lockUnit {ℓ = ℓ})
+               → (B : CommAlgebra R ℓ) (ϕ : CommAlgebraHom A B)
                → (fst I) ⊆ (fst (kernel A B ϕ))
-               → CommAlgebraHom (A / I) B
-  fst (inducedHom B ϕ I⊆kernel) =
+               → CommAlgebraHom ((A / I) key) B
+  fst (inducedHom unlock B ϕ I⊆kernel) =
     let open RingTheory (CommRing→Ring (CommAlgebra→CommRing B))
         instance
           _ : CommAlgebraStr R _
@@ -129,13 +132,14 @@ module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) (I : IdealsIn A) where
              (fst ϕ a) + (fst ϕ (- b)) ≡⟨ sym (IsAlgebraHom.pres+ (snd ϕ) _ _) ⟩
              fst ϕ (a - b)             ≡⟨ I⊆kernel (a - b) a-b∈I ⟩
              0r ∎)
-  pres0 (snd (inducedHom B ϕ kernel⊆I)) = pres0 (snd ϕ)
-  pres1 (snd (inducedHom B ϕ kernel⊆I)) = pres1 (snd ϕ)
-  pres+ (snd (inducedHom B ϕ kernel⊆I)) = elimProp2 (λ _ _ → isSetCommAlgebra B _ _) (pres+ (snd ϕ))
-  pres· (snd (inducedHom B ϕ kernel⊆I)) = elimProp2 (λ _ _ → isSetCommAlgebra B _ _) (pres· (snd ϕ))
-  pres- (snd (inducedHom B ϕ kernel⊆I)) = elimProp (λ _ → isSetCommAlgebra B _ _) (pres- (snd ϕ))
-  pres⋆ (snd (inducedHom B ϕ kernel⊆I)) = λ r → elimProp (λ _ → isSetCommAlgebra B _ _) (pres⋆ (snd ϕ) r)
+  pres0 (snd (inducedHom unlock B ϕ kernel⊆I)) = pres0 (snd ϕ)
+  pres1 (snd (inducedHom unlock B ϕ kernel⊆I)) = pres1 (snd ϕ)
+  pres+ (snd (inducedHom unlock B ϕ kernel⊆I)) = elimProp2 (λ _ _ → isSetCommAlgebra B _ _) (pres+ (snd ϕ))
+  pres· (snd (inducedHom unlock B ϕ kernel⊆I)) = elimProp2 (λ _ _ → isSetCommAlgebra B _ _) (pres· (snd ϕ))
+  pres- (snd (inducedHom unlock B ϕ kernel⊆I)) = elimProp (λ _ → isSetCommAlgebra B _ _) (pres- (snd ϕ))
+  pres⋆ (snd (inducedHom unlock B ϕ kernel⊆I)) = λ r → elimProp (λ _ → isSetCommAlgebra B _ _) (pres⋆ (snd ϕ) r)
 
+{-
   injectivePrecomp : (B : CommAlgebra R ℓ) (f g : CommAlgebraHom (A / I) B)
                      → f ∘a (quotientHom A I) ≡ g ∘a (quotientHom A I)
                      → f ≡ g
@@ -204,3 +208,4 @@ isZeroFromIdeal {A = A} {I = I} x x∈I = eq/ x 0a (subst (λ y → y ∈ (fst I
     step = lemma (CommAlgebra→CommRing A) x
     0' : ⟨ A / I ⟩
     0' = fst (quotientHom A I) 0a
+-}
