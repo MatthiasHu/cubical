@@ -1,5 +1,5 @@
 {-# OPTIONS --safe #-}
-module Cubical.Algebra.CommAlgebra.QuotientAlgebra where
+
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Equiv
@@ -26,6 +26,8 @@ open import Cubical.Tactics.CommRingSolver.Reflection
 open import Cubical.Algebra.Algebra.Properties
 open AlgebraHoms using (compAlgebraHom)
 
+module Cubical.Algebra.CommAlgebra.QuotientAlgebra (key : lockUnit {ℓ = ℓ-zero}) where
+
 private
   variable
     ℓ : Level
@@ -40,8 +42,8 @@ module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) (I : IdealsIn A) where
     _ : CommAlgebraStr _ _
     _ = snd A
 
-  _/_ : lockUnit {ℓ = ℓ} → CommAlgebra R ℓ
-  _/_ unlock = commAlgebraFromCommRing
+  _/WithKey_ : lockUnit {ℓ = ℓ-zero} → CommAlgebra R ℓ
+  _/WithKey_ unlock = commAlgebraFromCommRing
            ((CommAlgebra→CommRing A) CommRing./ I)
            (λ r → elim (λ _ → squash/) (λ x → [ r ⋆ x ]) (eq r))
            (λ r s → elimProp (λ _ → squash/ _ _)
@@ -72,15 +74,22 @@ module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) (I : IdealsIn A) where
                     r ⋆ x - r ⋆ y ∎ )
                   (isCommIdeal.·Closed (snd I) _ x-y∈I))
 
-  quotientHom : (key : lockUnit) → CommAlgebraHom A (_/_ key)
-  fst (quotientHom unlock) x = [ x ]
-  IsAlgebraHom.pres0 (snd (quotientHom unlock)) = refl
-  IsAlgebraHom.pres1 (snd (quotientHom unlock)) = refl
-  IsAlgebraHom.pres+ (snd (quotientHom unlock)) _ _ = refl
-  IsAlgebraHom.pres· (snd (quotientHom unlock)) _ _ = refl
-  IsAlgebraHom.pres- (snd (quotientHom unlock)) _ = refl
-  IsAlgebraHom.pres⋆ (snd (quotientHom unlock)) _ _ = refl
+  _/_ : CommAlgebra R ℓ
+  _/_ = _/WithKey_ key
 
+  quotientHomWithKey : (key : lockUnit) → CommAlgebraHom A (_/WithKey_ key)
+  fst (quotientHomWithKey unlock) x = [ x ]
+  IsAlgebraHom.pres0 (snd (quotientHomWithKey unlock)) = refl
+  IsAlgebraHom.pres1 (snd (quotientHomWithKey unlock)) = refl
+  IsAlgebraHom.pres+ (snd (quotientHomWithKey unlock)) _ _ = refl
+  IsAlgebraHom.pres· (snd (quotientHomWithKey unlock)) _ _ = refl
+  IsAlgebraHom.pres- (snd (quotientHomWithKey unlock)) _ = refl
+  IsAlgebraHom.pres⋆ (snd (quotientHomWithKey unlock)) _ _ = refl
+
+  quotientHom : CommAlgebraHom A _/_
+  quotientHom = quotientHomWithKey key
+
+{-
 module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) (I : IdealsIn A) where
   open CommRingStr {{...}} hiding (_-_; -_; ·IdL; ·DistR+) renaming (_·_ to _·R_; _+_ to _+R_)
   open CommAlgebraStr ⦃...⦄
@@ -212,3 +221,4 @@ isZeroFromIdeal unlock {A = A} {I = I} x x∈I = eq/ x 0a (subst (λ y → y ∈
     step = lemma (CommAlgebra→CommRing A) x
     0' : ⟨ (A / I) unlock ⟩
     0' = fst (quotientHom A I unlock) 0a
+-}
