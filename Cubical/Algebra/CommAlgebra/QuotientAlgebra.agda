@@ -72,7 +72,7 @@ module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) (I : IdealsIn A) where
                     r ⋆ x - r ⋆ y ∎ )
                   (isCommIdeal.·Closed (snd I) _ x-y∈I))
 
-  quotientHom : (key : lockUnit {ℓ = ℓ}) → CommAlgebraHom A (_/_ key)
+  quotientHom : (key : lockUnit) → CommAlgebraHom A (_/_ key)
   fst (quotientHom unlock) x = [ x ]
   IsAlgebraHom.pres0 (snd (quotientHom unlock)) = refl
   IsAlgebraHom.pres1 (snd (quotientHom unlock)) = refl
@@ -91,26 +91,26 @@ module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) (I : IdealsIn A) where
     _ : CommAlgebraStr _ _
     _ = snd A
 
-{-
   private
-    LRing = CommAlgebra→Ring (A / I)
+    LRing : lockUnit → Ring _
+    LRing key = CommAlgebra→Ring ((A / I) key)
     RRing = (CommAlgebra→Ring A) Ring./ (CommIdeal→Ideal I)
 
   -- sanity check / maybe a helper function some day
-  CommForget/ : RingEquiv (CommAlgebra→Ring (A / I)) ((CommAlgebra→Ring A) Ring./ (CommIdeal→Ideal I))
-  fst CommForget/ =
+  CommForget/ : (key : lockUnit) →
+    RingEquiv (CommAlgebra→Ring ((A / I) key)) ((CommAlgebra→Ring A) Ring./ (CommIdeal→Ideal I))
+  fst (CommForget/ unlock) =
     isoToEquiv
       (iso
-        (rec (isSetRing LRing) (λ a → [ a ]) λ a b a-b∈I → eq/ a b a-b∈I)
+        (rec (isSetRing (LRing unlock)) (λ a → [ a ]) λ a b a-b∈I → eq/ a b a-b∈I)
         (rec (isSetRing RRing) (λ a → [ a ]) (λ a b a-b∈I → eq/ a b a-b∈I))
-        (elimProp (λ _ → isSetRing LRing _ _) λ _ → refl)
+        (elimProp (λ _ → isSetRing (LRing unlock) _ _) λ _ → refl)
         (elimProp (λ _ → isSetRing RRing _ _) (λ _ → refl)))
-  IsRingHom.pres0 (snd CommForget/) = refl
-  IsRingHom.pres1 (snd CommForget/) = refl
-  IsRingHom.pres+ (snd CommForget/) = elimProp2 (λ _ _ → isSetRing RRing _ _) (λ _ _ → refl)
-  IsRingHom.pres· (snd CommForget/) = elimProp2 (λ _ _ → isSetRing RRing _ _) (λ _ _ → refl)
-  IsRingHom.pres- (snd CommForget/) = elimProp (λ _ → isSetRing RRing _ _) (λ _ → refl)
--}
+  IsRingHom.pres0 (snd (CommForget/ unlock)) = refl
+  IsRingHom.pres1 (snd (CommForget/ unlock)) = refl
+  IsRingHom.pres+ (snd (CommForget/ unlock)) = elimProp2 (λ _ _ → isSetRing RRing _ _) (λ _ _ → refl)
+  IsRingHom.pres· (snd (CommForget/ unlock)) = elimProp2 (λ _ _ → isSetRing RRing _ _) (λ _ _ → refl)
+  IsRingHom.pres- (snd (CommForget/ unlock)) = elimProp (λ _ → isSetRing RRing _ _) (λ _ → refl)
 
   open IsAlgebraHom
   inducedHom : (key : lockUnit {ℓ = ℓ})
@@ -139,13 +139,13 @@ module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) (I : IdealsIn A) where
   pres- (snd (inducedHom unlock B ϕ kernel⊆I)) = elimProp (λ _ → isSetCommAlgebra B _ _) (pres- (snd ϕ))
   pres⋆ (snd (inducedHom unlock B ϕ kernel⊆I)) = λ r → elimProp (λ _ → isSetCommAlgebra B _ _) (pres⋆ (snd ϕ) r)
 
-{-
-  injectivePrecomp : (B : CommAlgebra R ℓ) (f g : CommAlgebraHom (A / I) B)
-                     → f ∘a (quotientHom A I) ≡ g ∘a (quotientHom A I)
+  injectivePrecomp : (key : lockUnit)
+                     → (B : CommAlgebra R ℓ) (f g : CommAlgebraHom ((A / I) key) B)
+                     → f ∘a (quotientHom A I key) ≡ g ∘a (quotientHom A I key)
                      → f ≡ g
-  injectivePrecomp B f g p =
+  injectivePrecomp unlock B f g p =
     Σ≡Prop
-      (λ h → isPropIsAlgebraHom (CommRing→Ring R) (snd (CommAlgebra→Algebra (A / I))) h (snd (CommAlgebra→Algebra B)))
+      (λ h → isPropIsAlgebraHom (CommRing→Ring R) (snd (CommAlgebra→Algebra ((A / I) unlock))) h (snd (CommAlgebra→Algebra B)))
       (descendMapPath (fst f) (fst g) (isSetCommAlgebra B)
                       λ x → λ i → fst (p i) x)
 
@@ -154,27 +154,29 @@ module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) (I : IdealsIn A) where
 module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) where
   open CommAlgebraStr (snd A)
 
-  oneIdealQuotient : CommAlgebraEquiv (A / (1Ideal A)) (UnitCommAlgebra R)
-  fst oneIdealQuotient =
-    isoToEquiv (iso (fst (terminalMap R (A / (1Ideal A))))
+  oneIdealQuotient : (key : lockUnit) →
+    CommAlgebraEquiv ((A / (1Ideal A)) key) (UnitCommAlgebra R {ℓ' = ℓ})
+  fst (oneIdealQuotient unlock) =
+    isoToEquiv (iso (fst (terminalMap R ((A / (1Ideal A)) unlock)))
                     (λ _ → [ 0a ])
                     (λ _ → isPropUnit* _ _)
                     (elimProp (λ _ → squash/ _ _)
                               λ a → eq/ 0a a tt*))
-  snd oneIdealQuotient = snd (terminalMap R (A / (1Ideal A)))
+  snd (oneIdealQuotient key@unlock) = snd (terminalMap R ((A / (1Ideal A)) key))
 
-  zeroIdealQuotient : CommAlgebraEquiv A (A / (0Ideal A))
-  fst zeroIdealQuotient =
+  zeroIdealQuotient : (key : lockUnit) →
+    CommAlgebraEquiv A ((A / (0Ideal A)) key)
+  fst (zeroIdealQuotient unlock) =
     let open RingTheory (CommRing→Ring (CommAlgebra→CommRing A))
-    in isoToEquiv (iso (fst (quotientHom A (0Ideal A)))
+    in isoToEquiv (iso (fst (quotientHom A (0Ideal A) unlock))
                     (rec (isSetCommAlgebra A) (λ x → x) λ x y x-y≡0 → equalByDifference x y x-y≡0)
                     (elimProp (λ _ → squash/ _ _) λ _ → refl)
                     λ _ → refl)
-  snd zeroIdealQuotient = snd (quotientHom A (0Ideal A))
+  snd (zeroIdealQuotient unlock) = snd (quotientHom A (0Ideal A) unlock)
 
 [_]/ : {R : CommRing ℓ} {A : CommAlgebra R ℓ} {I : IdealsIn A}
-       → (a : fst A) → fst (A / I)
-[ a ]/ = [ a ]
+       → (a : fst A) → (key : lockUnit) → fst ((A / I) key)
+[ a ]/ unlock = [ a ]
 
 
 
@@ -182,14 +184,15 @@ module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) (I : IdealsIn A) where
   open CommIdeal using (isPropIsCommIdeal)
 
   private
+    π : (key : lockUnit) → CommAlgebraHom A ((A / I) key)
     π = quotientHom A I
 
-  kernel≡I : kernel A (A / I) π ≡ I
-  kernel≡I =
-    kernel A (A / I) π ≡⟨ Σ≡Prop
-                            (isPropIsCommIdeal (CommAlgebra→CommRing A))
-                            refl ⟩
-    _                  ≡⟨  CommRing.kernel≡I {R = CommAlgebra→CommRing A} I ⟩
+  kernel≡I : (key : lockUnit) → kernel A ((A / I) key) (π key) ≡ I
+  kernel≡I key@unlock =
+    kernel A ((A / I) key) (π key) ≡⟨ Σ≡Prop
+                                        (isPropIsCommIdeal (CommAlgebra→CommRing A))
+                                        refl ⟩
+    _                              ≡⟨  CommRing.kernel≡I {R = CommAlgebra→CommRing A} I ⟩
     I ∎
 
 
@@ -199,13 +202,13 @@ private
     lemma : (y : (fst R)) → y ≡ y - 0r
     lemma = solve R
 
-isZeroFromIdeal : {R : CommRing ℓ} {A : CommAlgebra R ℓ} {I : IdealsIn A}
-                  → (x : ⟨ A ⟩) → x ∈ (fst I) → fst (quotientHom A I) x ≡ CommAlgebraStr.0a (snd (A / I))
-isZeroFromIdeal {A = A} {I = I} x x∈I = eq/ x 0a (subst (λ y → y ∈ (fst I)) step x∈I )
+isZeroFromIdeal : (key : lockUnit)
+                  → {R : CommRing ℓ} {A : CommAlgebra R ℓ} {I : IdealsIn A}
+                  → (x : ⟨ A ⟩) → x ∈ (fst I) → fst (quotientHom A I key) x ≡ CommAlgebraStr.0a (snd ((A / I) key))
+isZeroFromIdeal unlock {A = A} {I = I} x x∈I = eq/ x 0a (subst (λ y → y ∈ (fst I)) step x∈I )
   where
     open CommAlgebraStr (snd A)
     step : x ≡ x - 0a
     step = lemma (CommAlgebra→CommRing A) x
-    0' : ⟨ A / I ⟩
-    0' = fst (quotientHom A I) 0a
--}
+    0' : ⟨ (A / I) unlock ⟩
+    0' = fst (quotientHom A I unlock) 0a
