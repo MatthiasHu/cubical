@@ -15,7 +15,7 @@ open import Cubical.Foundations.Structure
 open import Cubical.Foundations.Function
 
 open import Cubical.Data.Sigma
-open import Cubical.Data.Nat as ℕ using (ℕ; zero; suc)
+open import Cubical.Data.Nat using (ℕ; zero; suc; caseNat)
 open import Cubical.Data.Nat.Order
 open import Cubical.Data.Empty.Base
 open import Cubical.Data.Bool
@@ -48,10 +48,45 @@ module _
   open Sum (CommRing→Ring R)
   open Preliminaries
 
+  private
+    partitionSum : ℕ → (ℕ → ℕ → ⟨ R ⟩) → ⟨ R ⟩
+    partitionSum n f = ∑ (uncurry f ∘ partitionsIntoTwo n)
+
+    partitionSumFlip : (n : ℕ) (f : ℕ → ℕ → ⟨ R ⟩) → partitionSum n f ≡ partitionSum n (flip f)
+    partitionSumFlip zero f = refl
+    partitionSumFlip (suc n) f =
+      partitionSum (suc n) f  ≡⟨⟩
+      ∑ (λ{ zero → uncurry f (partitionsIntoTwo (suc n) zero)
+          ; suc i → uncurry f (partitionsIntoTwo (suc n) (suc i))})  ≡⟨ {!!} ⟩
+      partitionSum (suc n) (flip f)  ∎
+
+--  private
+--    ∑[+=]-syntax : ℕ → (ℕ → ℕ → ⟨ R ⟩) → ⟨ R ⟩
+--    ∑[+=]-syntax n v = ∑ ((λ(k , l) → v k l) ∘ partitionsIntoTwo n)
+--    syntax ∑[+=]-syntax n (λ k → λ l → v) = ∑[ k + l == n ] v
+--    syntax ∑ (λ i → v) = ∑[ i ] v
+--    syntax ∑ ((λ p → v ) ∘ partitionsIntoTwo n) = ∑[ p == n ] v
+
   powerSeriesCommRingStr : CommRingStr (ℕ → ⟨ R ⟩)
+  module ps = CommRingStr powerSeriesCommRingStr
   CommRingStr.0r powerSeriesCommRingStr = const 0r
-  CommRingStr.1r powerSeriesCommRingStr = λ{ zero → 1r ; (suc _) → 0r }
+  CommRingStr.1r powerSeriesCommRingStr = caseNat 1r 0r
   CommRingStr._+_ powerSeriesCommRingStr f g = λ n → f n + g n
-  CommRingStr._·_ powerSeriesCommRingStr f g = λ n → ∑ ((λ{ (k , l) → f k · g l }) ∘ partitionsIntoTwo n)
+  CommRingStr._·_ powerSeriesCommRingStr f g = λ n → ∑ ((λ(k , l) → f k · g l) ∘ partitionsIntoTwo n)
   CommRingStr.-_ powerSeriesCommRingStr f = -_ ∘ f
-  CommRingStr.isCommRing powerSeriesCommRingStr = {!!}
+  CommRingStr.isCommRing powerSeriesCommRingStr = makeIsCommRing
+    (isSet→ is-set)
+    (λ f g h → funExt (λ n → +Assoc (f n) (g n) (h n)))
+    (λ f → funExt (λ n → +IdR (f n)))
+    (λ f → funExt λ n → +InvR (f n))
+    (λ f g → funExt (λ n → +Comm (f n) (g n)))
+    (λ f g h → funExt (λ n → {!!}))
+    (λ f → funExt λ n → {!
+      (f ps.· ps.1r) n ≡⟨⟩
+      (ps.1r ps.· f) n ≡⟨⟩
+--      (∑ λ i → (λ{ (k , l) → f k · ps.1r l }) (partitionsIntoTwo n i)) ≡⟨ {!funExt (λ{ zero → ?; (suc i) → ? })!}⟩
+      {!!}  ≡⟨ {!!} ⟩
+      {!!} ≡⟨ {!!} ⟩
+      f n ∎  !} )
+    (λ f g h → funExt (λ n → {!!}))
+    (λ f g → funExt (λ n → {!!}))
