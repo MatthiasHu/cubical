@@ -26,19 +26,11 @@ open import Cubical.Algebra.Ring
 open import Cubical.Algebra.CommRing
 open import Cubical.Algebra.Ring.BigOps using (module Sum)
 
+open import Cubical.Tactics.CommRingSolver.Reflection
+
 private
   variable
     ℓ : Level
-
-module Preliminaries where
-
-  partitionsIntoTwo : (n : ℕ) → FinVec (ℕ × ℕ) (suc n)
-  partitionsIntoTwo zero = replicateFinVec 1 (zero , zero)
-  partitionsIntoTwo (suc n) =
-    λ{ zero → (zero , suc n)
-     ; (suc i) →
-         let (k , l) = partitionsIntoTwo n i
-         in (suc k , l) }
 
 module _
   (R : CommRing ℓ)
@@ -46,33 +38,32 @@ module _
 
   open CommRingStr (snd R)
   open Sum (CommRing→Ring R)
-  open Preliminaries
 
   private
-    partitionSum : ℕ → (ℕ → ℕ → ⟨ R ⟩) → ⟨ R ⟩
-    partitionSum n f = ∑ (uncurry f ∘ partitionsIntoTwo n)
+    ·ps : (ℕ → ⟨ R ⟩) → (ℕ → ⟨ R ⟩) → ℕ → ⟨ R ⟩
+    -- (a + X * as) * (b + X * bs)  =  a * b  +  X * (a * bs + as * (b + X * bs))
+    ·ps f g zero = f zero · g zero
+    ·ps f g (suc n) = f zero · g (suc n) + ·ps (f ∘ suc) g n
 
-    partitionSumFlip : (n : ℕ) (f : ℕ → ℕ → ⟨ R ⟩) → partitionSum n f ≡ partitionSum n (flip f)
-    partitionSumFlip zero f = refl
-    partitionSumFlip (suc n) f =
-      partitionSum (suc n) f  ≡⟨⟩
-      ∑ (λ{ zero → uncurry f (partitionsIntoTwo (suc n) zero)
-          ; suc i → uncurry f (partitionsIntoTwo (suc n) (suc i))})  ≡⟨ {!!} ⟩
-      partitionSum (suc n) (flip f)  ∎
-
---  private
---    ∑[+=]-syntax : ℕ → (ℕ → ℕ → ⟨ R ⟩) → ⟨ R ⟩
---    ∑[+=]-syntax n v = ∑ ((λ(k , l) → v k l) ∘ partitionsIntoTwo n)
---    syntax ∑[+=]-syntax n (λ k → λ l → v) = ∑[ k + l == n ] v
---    syntax ∑ (λ i → v) = ∑[ i ] v
---    syntax ∑ ((λ p → v ) ∘ partitionsIntoTwo n) = ∑[ p == n ] v
+    ·psComm : (f g : ℕ → ⟨ R ⟩) → (n : ℕ) → ·ps f g n ≡ ·ps g f n
+    ·psComm f g zero = ·Comm _ _
+    ·psComm f g one = calculation (f 0) (f 1) (g 0) (g 1)
+      where
+      calculation : (f0 f1 g0 g1 : ⟨ R ⟩) → f0 · g1 + f1 · g0 ≡ g0 · f1 + g1 · f0
+      calculation = solve R
+    ·psComm f g (suc m@(suc n)) =
+      (·ps f g (suc m))                      ≡⟨⟩
+      (f 0 · g (suc m) + ·ps (f ∘ suc) g m)  ≡⟨ cong (_ +_) (·psComm (f ∘ suc) g m) ⟩
+      (f 0 · g (suc m) + ·ps g (f ∘ suc) m)  ≡⟨⟩
+      (f 0 · g (suc m) + (g 0 · f (suc m) + ·ps (g ∘ suc) (f ∘ suc) n))  ≡⟨ {!!} ⟩
+      {!!}  ∎
 
   powerSeriesCommRingStr : CommRingStr (ℕ → ⟨ R ⟩)
   module ps = CommRingStr powerSeriesCommRingStr
   CommRingStr.0r powerSeriesCommRingStr = const 0r
   CommRingStr.1r powerSeriesCommRingStr = caseNat 1r 0r
   CommRingStr._+_ powerSeriesCommRingStr f g = λ n → f n + g n
-  CommRingStr._·_ powerSeriesCommRingStr f g = λ n → ∑ ((λ(k , l) → f k · g l) ∘ partitionsIntoTwo n)
+  CommRingStr._·_ powerSeriesCommRingStr = ·ps
   CommRingStr.-_ powerSeriesCommRingStr f = -_ ∘ f
   CommRingStr.isCommRing powerSeriesCommRingStr = makeIsCommRing
     (isSet→ is-set)
@@ -80,13 +71,10 @@ module _
     (λ f → funExt (λ n → +IdR (f n)))
     (λ f → funExt λ n → +InvR (f n))
     (λ f g → funExt (λ n → +Comm (f n) (g n)))
+    (λ f g h → funExt λ{ zero → ·Assoc (f zero) (g zero) (h zero)
+                       ; (suc n) → {!!}})
+    (λ f → funExt λ{ zero → ·IdR (f zero)
+                   ; (suc n) → {!!} })
     (λ f g h → funExt (λ n → {!!}))
-    (λ f → funExt λ n → {!
-      (f ps.· ps.1r) n ≡⟨⟩
-      (ps.1r ps.· f) n ≡⟨⟩
---      (∑ λ i → (λ{ (k , l) → f k · ps.1r l }) (partitionsIntoTwo n i)) ≡⟨ {!funExt (λ{ zero → ?; (suc i) → ? })!}⟩
-      {!!}  ≡⟨ {!!} ⟩
-      {!!} ≡⟨ {!!} ⟩
-      f n ∎  !} )
-    (λ f g h → funExt (λ n → {!!}))
-    (λ f g → funExt (λ n → {!!}))
+    (λ f g → funExt λ{ zero → ·Comm (f zero) (g zero)
+                     ; (suc n) → {!!}})
