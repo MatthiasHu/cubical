@@ -24,11 +24,11 @@ record IsTorsor (G : Group ℓ) {T : Type ℓ'}
 
   no-eta-equality
 
-  open GroupStr (snd G) public
+  open GroupStr (snd G)
 
   field
     isSetT        : isSet T
-    ⋆Assoc        : ∀ g h x → (g · h) ⋆ x ≡ g ⋆ (h ⋆ x)
+    ⋆Assoc        : ∀ g h x → g ⋆ (h ⋆ x) ≡ (g · h) ⋆ x
     ⋆Id           : ∀ x → 1g ⋆ x ≡ x
     free          : ∀ g x → g ⋆ x ≡ x → g ≡ 1g
     trans         : ∀ x y → ∃[ g ∈ _ ] g ⋆ x ≡ y
