@@ -18,7 +18,7 @@ private
     G : Group ℓ
 
 
-module TorsorTheory (G : Group ℓ) (T : Torsor G ℓ')
+module TorsorTheory {G : Group ℓ} (T : Torsor G ℓ')
   where
   open TorsorStr (snd T)
 

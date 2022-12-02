@@ -42,6 +42,7 @@ record TorsorStr (G : Group ℓ) (T : Type ℓ') : Type (ℓ-max ℓ ℓ') where
     _⋆_            : ⟨ G ⟩ → T → T
     isTorsor       : IsTorsor G _⋆_
 
+  infixl 7 _⋆_
   open IsTorsor isTorsor public
 
 Torsor : (G : Group ℓ) → ∀ ℓ' → Type (ℓ-max ℓ (ℓ-suc ℓ'))
