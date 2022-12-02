@@ -14,7 +14,7 @@ open import Cubical.Algebra.Torsor.Base
 
 private
   variable
-    ℓ ℓ' ℓ'' ℓ''' : Level
+    ℓ ℓ' : Level
     G : Group ℓ
 
 
