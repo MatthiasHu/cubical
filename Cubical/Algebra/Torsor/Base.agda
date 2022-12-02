@@ -3,18 +3,10 @@ module Cubical.Algebra.Torsor.Base where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Function
-open import Cubical.Foundations.Isomorphism
-open import Cubical.Foundations.Equiv
-open import Cubical.Foundations.HLevels
-open import Cubical.Foundations.SIP
+open import Cubical.Foundations.Structure
 
 open import Cubical.Data.Sigma
-open import Cubical.HITs.PropositionalTruncation as PT
-
-open import Cubical.Displayed.Base
-open import Cubical.Displayed.Auto
-open import Cubical.Displayed.Record
-open import Cubical.Displayed.Universe
+open import Cubical.HITs.PropositionalTruncation
 
 open import Cubical.Reflection.RecordEquiv
 
