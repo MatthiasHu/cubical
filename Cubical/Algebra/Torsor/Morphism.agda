@@ -43,7 +43,7 @@ _$t_ : (f : TorsorHom T T') → ⟨ T ⟩ → ⟨ T' ⟩
 f $t x = fst f x
 
 
-module _ {T T' : Torsor G ℓ'} (f : TorsorHom T T') where
+module _ {T : Torsor G ℓ'} {T' : Torsor G ℓ''} (f : TorsorHom T T') where
   open TorsorTheory ⦃...⦄
   open TorsorStr ⦃...⦄
   open GroupStr (snd G)
@@ -81,17 +81,3 @@ module _ {T T' : Torsor G ℓ'} (f : TorsorHom T T') where
       (isPropIsEquiv (fst f))
       (λ t₀ → equiv t₀)
       inhab
-
-isPropIsTorsor : (G : Group ℓ) {T : Type ℓ'}
-                 (_⋆_ : ⟨ G ⟩ → T → T)
-                 → isProp (IsTorsor G _⋆_)
-isPropIsTorsor G _⋆_ =
-  isOfHLevelRetractFromIso 1 IsTorsorIsoΣ
-    (isPropΣ isPropIsSet λ isSetT →
-    (isProp× (isPropΠ3 λ _ _ _ → isSetT _ _)
-    (isProp× (isPropΠ λ _ → isSetT _ _)
-    (isProp× (isPropΠ3 λ _ _ _ → is-set _ _)
-    (isProp× (isPropΠ2 (λ _ _ → isPropPropTrunc))
-    isPropPropTrunc)))))
-    where
-    open GroupStr (snd G)
