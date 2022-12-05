@@ -27,13 +27,11 @@ record IsTorsorHom {G : Group ℓ} {T : Type ℓ'} {T' : Type ℓ''}
                    : Type (ℓ-max ℓ (ℓ-max ℓ' ℓ''))
                  where
 
-  open TorsorStr ⦃...⦄
-  private instance
-    _ = Tstr
-    _ = Tstr'
+  private module Tstr  = TorsorStr Tstr
+  private module Tstr' = TorsorStr Tstr'
 
   field
-    pres⋆ : (g : ⟨ G ⟩) (x : T) → f (g ⋆ x) ≡ g ⋆ f x
+    pres⋆ : (g : ⟨ G ⟩) (x : T) → f (g Tstr.⋆ x) ≡ g Tstr'.⋆ f x
 
 TorsorHom : (T : Torsor G ℓ') (T' : Torsor G ℓ'') → Type _
 TorsorHom T T' =  Σ[ f ∈ (⟨ T ⟩ → ⟨ T' ⟩) ] IsTorsorHom (snd T) f (snd T')
