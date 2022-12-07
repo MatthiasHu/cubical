@@ -8,6 +8,7 @@ open import Cubical.Foundations.Powerset
 open import Cubical.Foundations.Function
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Structure
+open import Cubical.HITs.PropositionalTruncation as PT
 
 open import Cubical.Data.FinData
 open import Cubical.Data.Nat
@@ -70,6 +71,9 @@ module _ {R : CommRing ℓ} where
       -}
       mkFPAlgebra : CommAlgebra R ℓ
       mkFPAlgebra = Polynomials n / relationsIdeal
+
+      mkFPAlgebraDef : mkFPAlgebra ≡ Polynomials n / relationsIdeal
+      mkFPAlgebraDef = refl
 
       modRelations : CommAlgebraHom (Polynomials n) (Polynomials n / relationsIdeal)
       modRelations = quotientHom (Polynomials n) relationsIdeal
@@ -249,11 +253,36 @@ module _ {R : CommRing ℓ} where
   isFPAlgebraIsProp : {A : CommAlgebra R ℓ} → isProp (isFPAlgebra A)
   isFPAlgebraIsProp = isPropPropTrunc
 
+  isFPAlgebra→∃ : (A : CommAlgebra R ℓ') → isFPAlgebra A →
+    ∃[ (n , m) ∈ ℕ × ℕ ]
+    Σ[ r ∈ FinVec ⟨ Polynomials n ⟩ m ]
+    CommAlgebraEquiv (Polynomials n / generatedIdeal (Polynomials n) r) A
+  isFPAlgebra→∃ A = PT.rec isPropPropTrunc λ fp →
+    let open FinitePresentation fp
+    in ∣ (n , m) , relations , (subst (λ A' → CommAlgebraEquiv A' A) (mkFPAlgebraDef n relations) equiv) ∣₁
+
 FPAlgebra : (R : CommRing ℓ) (ℓ' : Level) → Type _
 FPAlgebra R ℓ' = Σ[ A ∈ Type ℓ' ] Σ[ str ∈ CommAlgebraStr R A ] isFPAlgebra (A , str)
 
-isGroupoidFPAlgebra : {R : CommRing ℓ} {ℓ' : Level} → isGroupoid (FPAlgebra R ℓ')
-isGroupoidFPAlgebra =
-  isOfHLevelRetractFromIso
-    3 (invIso Σ-assoc-Iso)
-    (isOfHLevelΣ 3 isGroupoidCommAlgebra λ _ → isProp→isOfHLevelSuc 2 isPropPropTrunc)
+module _ {R : CommRing ℓ} where
+  isGroupoidFPAlgebra : {ℓ' : Level} → isGroupoid (FPAlgebra R ℓ')
+  isGroupoidFPAlgebra =
+    isOfHLevelRetractFromIso
+      3 (invIso Σ-assoc-Iso)
+      (isOfHLevelΣ 3 isGroupoidCommAlgebra λ _ → isProp→isOfHLevelSuc 2 isPropPropTrunc)
+
+  FPAlgebra→CommAlgebra : FPAlgebra R ℓ' → CommAlgebra R ℓ'
+  FPAlgebra→CommAlgebra (A , str , isFP) = A , str
+
+  FPAlgebra→isFPAlgebra : (A : FPAlgebra R ℓ') → isFPAlgebra (FPAlgebra→CommAlgebra A)
+  FPAlgebra→isFPAlgebra (A , str , isFP) = isFP
+
+  FPAlgebraFromCommAlgebra : (A : CommAlgebra R ℓ') → isFPAlgebra A → FPAlgebra R ℓ'
+  FPAlgebraFromCommAlgebra (A , str) isFP = A , str , isFP
+
+  FPAlgebra→∃ : (A : FPAlgebra R ℓ') →
+    ∃[ (n , m) ∈ ℕ × ℕ ]
+    Σ[ r ∈ FinVec ⟨ Polynomials n ⟩ m ]
+    CommAlgebraEquiv (Polynomials n / generatedIdeal (Polynomials n) r)
+                     (FPAlgebra→CommAlgebra A)
+  FPAlgebra→∃ A = isFPAlgebra→∃ (FPAlgebra→CommAlgebra A) (FPAlgebra→isFPAlgebra A)
