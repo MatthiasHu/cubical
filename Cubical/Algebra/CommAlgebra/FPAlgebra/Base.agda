@@ -250,7 +250,10 @@ module _ {R : CommRing ℓ} where
   isFPAlgebraIsProp = isPropPropTrunc
 
 FPAlgebra : (R : CommRing ℓ) (ℓ' : Level) → Type _
-FPAlgebra R ℓ' = Σ[ A ∈ CommAlgebra R ℓ' ] isFPAlgebra A
+FPAlgebra R ℓ' = Σ[ A ∈ Type ℓ' ] Σ[ str ∈ CommAlgebraStr R A ] isFPAlgebra (A , str)
 
 isGroupoidFPAlgebra : {R : CommRing ℓ} {ℓ' : Level} → isGroupoid (FPAlgebra R ℓ')
-isGroupoidFPAlgebra = isOfHLevelΣ 3 isGroupoidCommAlgebra λ _ → isProp→isOfHLevelSuc 2 isPropPropTrunc
+isGroupoidFPAlgebra =
+  isOfHLevelRetractFromIso
+    3 (invIso Σ-assoc-Iso)
+    (isOfHLevelΣ 3 isGroupoidCommAlgebra λ _ → isProp→isOfHLevelSuc 2 isPropPropTrunc)
