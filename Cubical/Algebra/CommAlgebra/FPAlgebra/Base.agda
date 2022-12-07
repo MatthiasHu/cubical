@@ -35,19 +35,20 @@ private
   variable
     ℓ ℓ' : Level
 
+Polynomials : (R : CommRing ℓ) → ℕ → CommAlgebra R ℓ
+Polynomials R n = R [ Fin n ]
+
 module _ {R : CommRing ℓ} where
   open Construction using (var)
-  Polynomials : (n : ℕ) → CommAlgebra R ℓ
-  Polynomials n = R [ Fin n ]
 
-  evPoly : {n : ℕ} (A : CommAlgebra R ℓ) → ⟨ Polynomials n ⟩ → FinVec ⟨ A ⟩ n → ⟨ A ⟩
+  evPoly : {n : ℕ} (A : CommAlgebra R ℓ) → ⟨ Polynomials R n ⟩ → FinVec ⟨ A ⟩ n → ⟨ A ⟩
   evPoly A P values = fst (freeInducedHom A values) P
 
-  evPolyPoly : {n : ℕ} (P : ⟨ Polynomials n ⟩) → evPoly (Polynomials n) P var ≡ P
+  evPolyPoly : {n : ℕ} (P : ⟨ Polynomials R n ⟩) → evPoly (Polynomials R n) P var ≡ P
   evPolyPoly {n = n} P = cong (λ u → fst u P) (inducedHomVar R (Fin n))
 
   evPolyHomomorphic : {n : ℕ} (A B : CommAlgebra R ℓ) (f : CommAlgebraHom A B)
-                     → (P : ⟨ Polynomials n ⟩) → (values : FinVec ⟨ A ⟩ n)
+                     → (P : ⟨ Polynomials R n ⟩) → (values : FinVec ⟨ A ⟩ n)
                      → (fst f) (evPoly A P values) ≡ evPoly B P (fst f ∘ values)
   evPolyHomomorphic A B f P values =
     (fst f) (evPoly A P values)                         ≡⟨ refl ⟩
@@ -57,11 +58,11 @@ module _ {R : CommRing ℓ} where
     evPoly B P (fst f ∘ values) ∎
     where open AlgebraHoms
 
-  module _ {m : ℕ} (n : ℕ) (relation : FinVec ⟨ Polynomials n ⟩ m) where
+  module _ {m : ℕ} (n : ℕ) (relation : FinVec ⟨ Polynomials R n ⟩ m) where
     open CommAlgebraStr using (0a)
     open Cubical.Algebra.Algebra.Properties.AlgebraHoms
 
-    relationsIdeal = generatedIdeal (Polynomials n) relation
+    relationsIdeal = generatedIdeal (Polynomials R n) relation
 
     abstract
       {-
@@ -70,13 +71,13 @@ module _ {R : CommRing ℓ} where
         This also means, the where blocks contain more type declarations than usual.
       -}
       mkFPAlgebra : CommAlgebra R ℓ
-      mkFPAlgebra = Polynomials n / relationsIdeal
+      mkFPAlgebra = Polynomials R n / relationsIdeal
 
-      mkFPAlgebraDef : mkFPAlgebra ≡ Polynomials n / relationsIdeal
+      mkFPAlgebraDef : mkFPAlgebra ≡ Polynomials R n / relationsIdeal
       mkFPAlgebraDef = refl
 
-      modRelations : CommAlgebraHom (Polynomials n) (Polynomials n / relationsIdeal)
-      modRelations = quotientHom (Polynomials n) relationsIdeal
+      modRelations : CommAlgebraHom (Polynomials R n) (Polynomials R n / relationsIdeal)
+      modRelations = quotientHom (Polynomials R n) relationsIdeal
 
       generator : (i : Fin n) → ⟨ mkFPAlgebra ⟩
       generator = fst modRelations ∘ var
@@ -84,15 +85,15 @@ module _ {R : CommRing ℓ} where
       relationsHold : (i : Fin m) → evPoly mkFPAlgebra (relation i) generator ≡ 0a (snd mkFPAlgebra)
       relationsHold i =
         evPoly mkFPAlgebra (relation i) generator
-        ≡⟨ sym (evPolyHomomorphic (Polynomials n) mkFPAlgebra modRelations (relation i) var) ⟩
-        fst modRelations (evPoly (Polynomials n) (relation i) var)
+        ≡⟨ sym (evPolyHomomorphic (Polynomials R n) mkFPAlgebra modRelations (relation i) var) ⟩
+        fst modRelations (evPoly (Polynomials R n) (relation i) var)
         ≡⟨ cong (λ u → fst modRelations u) (evPolyPoly (relation i)) ⟩
         fst modRelations (relation i)
         ≡⟨ isZeroFromIdeal {R = R}
-                           {A = (Polynomials n)}
+                           {A = (Polynomials R n)}
                            {I = relationsIdeal}
                            (relation i)
-                           (incInIdeal (Polynomials n) relation i ) ⟩
+                           (incInIdeal (Polynomials R n) relation i ) ⟩
         0a (snd mkFPAlgebra) ∎
 
       module _
@@ -107,21 +108,21 @@ module _ {R : CommRing ℓ} where
         -}
 
         private
-          freeHom : CommAlgebraHom (Polynomials n) A
+          freeHom : CommAlgebraHom (Polynomials R n) A
           freeHom = freeInducedHom A values
 
-          isInKernel :   fst (generatedIdeal (Polynomials n) relation)
-                       ⊆ fst (kernel (Polynomials n) A freeHom)
+          isInKernel :   fst (generatedIdeal (Polynomials R n) relation)
+                       ⊆ fst (kernel (Polynomials R n) A freeHom)
           isInKernel = inclOfFGIdeal
-                         (CommAlgebra→CommRing (Polynomials n))
+                         (CommAlgebra→CommRing (Polynomials R n))
                          relation
-                         (kernel (Polynomials n) A freeHom)
+                         (kernel (Polynomials R n) A freeHom)
                          relationsHold
 
         inducedHom : CommAlgebraHom mkFPAlgebra A
         inducedHom =
           quotientInducedHom
-            (Polynomials n)
+            (Polynomials R n)
             relationsIdeal
             A
             freeHom
@@ -132,7 +133,7 @@ module _ {R : CommRing ℓ} where
           → fst inducedHom (generator i) ≡ values i
         inducedHomOnGenerators i =
           cong (λ f → fst f (var i))
-          (inducedHom∘quotientHom (Polynomials n) relationsIdeal A freeHom isInKernel)
+          (inducedHom∘quotientHom (Polynomials R n) relationsIdeal A freeHom isInKernel)
 
         unique :
              (f : CommAlgebraHom mkFPAlgebra A)
@@ -140,7 +141,7 @@ module _ {R : CommRing ℓ} where
              → inducedHom ≡ f
         unique f hasCorrectValues =
           injectivePrecomp
-            (Polynomials n)
+            (Polynomials R n)
             relationsIdeal
             A
             inducedHom
@@ -161,7 +162,7 @@ module _ {R : CommRing ℓ} where
                         ↓      ↘
                    mkFPAlgebra ─f→ A
             -}
-            f' iHom' : CommAlgebraHom (Polynomials n) A
+            f' iHom' : CommAlgebraHom (Polynomials R n) A
             f' = compAlgebraHom modRelations f
             iHom' = compAlgebraHom modRelations inducedHom
 
@@ -192,12 +193,12 @@ module _ {R : CommRing ℓ} where
                       CommAlgebraHom mkFPAlgebra A → zeroLocus A
       evaluateAtFP {A} f = value ,
         λ i →  evPoly A (relation i) value                            ≡⟨ step1 (relation i) ⟩
-            fst compHom (evPoly (Polynomials n) (relation i) var)  ≡⟨ refl ⟩
+            fst compHom (evPoly (Polynomials R n) (relation i) var)  ≡⟨ refl ⟩
             (fst f) ((fst modRelations)
-                       (evPoly (Polynomials n) (relation i) var))  ≡⟨ cong
+                       (evPoly (Polynomials R n) (relation i) var))  ≡⟨ cong
                                                                        (fst f)
                                                                        (evPolyHomomorphic
-                                                                         (Polynomials n)
+                                                                         (Polynomials R n)
                                                                          mkFPAlgebra
                                                                          modRelations
                                                                          (relation i) var) ⟩
@@ -205,12 +206,12 @@ module _ {R : CommRing ℓ} where
             (fst f) (0a (snd mkFPAlgebra))                           ≡⟨ IsAlgebraHom.pres0 (snd f) ⟩
             0a (snd A) ∎
         where
-          compHom : CommAlgebraHom (Polynomials n) A
-          compHom = CommAlgebraHoms.compCommAlgebraHom (Polynomials n) mkFPAlgebra A modRelations f
+          compHom : CommAlgebraHom (Polynomials R n) A
+          compHom = CommAlgebraHoms.compCommAlgebraHom (Polynomials R n) mkFPAlgebra A modRelations f
           value : FinVec ⟨ A ⟩ n
           value = (Iso.fun (homMapIso A)) compHom
-          step1 : (x : ⟨ Polynomials n ⟩) → evPoly A x value ≡ fst compHom (evPoly (Polynomials n) x var)
-          step1 x = sym (evPolyHomomorphic (Polynomials n) A compHom x var)
+          step1 : (x : ⟨ Polynomials R n ⟩) → evPoly A x value ≡ fst compHom (evPoly (Polynomials R n) x var)
+          step1 x = sym (evPolyHomomorphic (Polynomials R n) A compHom x var)
 
       FPHomIso : {A : CommAlgebra R ℓ} →
                   Iso (CommAlgebraHom mkFPAlgebra A) (zeroLocus A)
@@ -244,7 +245,7 @@ module _ {R : CommRing ℓ} where
     field
       n : ℕ
       m : ℕ
-      relations : FinVec ⟨ Polynomials n ⟩ m
+      relations : FinVec ⟨ Polynomials R n ⟩ m
       equiv : CommAlgebraEquiv (mkFPAlgebra n relations) A
 
   isFPAlgebra : (A : CommAlgebra R ℓ') → Type _
@@ -255,11 +256,11 @@ module _ {R : CommRing ℓ} where
 
   isFPAlgebra→∃ : (A : CommAlgebra R ℓ') → isFPAlgebra A →
     ∃[ (n , m) ∈ ℕ × ℕ ]
-    Σ[ r ∈ FinVec ⟨ Polynomials n ⟩ m ]
-    CommAlgebraEquiv (Polynomials n / generatedIdeal (Polynomials n) r) A
-  isFPAlgebra→∃ A = PT.rec isPropPropTrunc λ fp →
+    Σ[ r ∈ FinVec ⟨ Polynomials R n ⟩ m ]
+    CommAlgebraEquiv (Polynomials R n / generatedIdeal (Polynomials R n) r) A
+  isFPAlgebra→∃ A = PT.map λ fp →
     let open FinitePresentation fp
-    in ∣ (n , m) , relations , (subst (λ A' → CommAlgebraEquiv A' A) (mkFPAlgebraDef n relations) equiv) ∣₁
+    in (n , m) , relations , (subst (λ A' → CommAlgebraEquiv A' A) (mkFPAlgebraDef n relations) equiv)
 
 FPAlgebra : (R : CommRing ℓ) (ℓ' : Level) → Type _
 FPAlgebra R ℓ' = Σ[ A ∈ Type ℓ' ] Σ[ str ∈ CommAlgebraStr R A ] isFPAlgebra (A , str)
@@ -282,7 +283,7 @@ module _ {R : CommRing ℓ} where
 
   FPAlgebra→∃ : (A : FPAlgebra R ℓ') →
     ∃[ (n , m) ∈ ℕ × ℕ ]
-    Σ[ r ∈ FinVec ⟨ Polynomials n ⟩ m ]
-    CommAlgebraEquiv (Polynomials n / generatedIdeal (Polynomials n) r)
+    Σ[ r ∈ FinVec ⟨ Polynomials R n ⟩ m ]
+    CommAlgebraEquiv (Polynomials R n / generatedIdeal (Polynomials R n) r)
                      (FPAlgebra→CommAlgebra A)
   FPAlgebra→∃ A = isFPAlgebra→∃ (FPAlgebra→CommAlgebra A) (FPAlgebra→isFPAlgebra A)

@@ -55,13 +55,13 @@ module _ (R : CommRing ℓ) where
   module _ (n : ℕ) where
     private
       A : CommAlgebra R ℓ
-      A = Polynomials n
+      A = Polynomials R n
 
       emptyGen : FinVec (fst A) 0
       emptyGen = λ ()
 
       B : CommAlgebra R ℓ
-      B = FPAlgebra n emptyGen
+      B = mkFPAlgebra n emptyGen
 
     polynomialAlgFP : FinitePresentation A
     FinitePresentation.n polynomialAlgFP = n
@@ -103,13 +103,13 @@ module _ (R : CommRing ℓ) where
   {- The initial R-algebra is finitely presented -}
   private
     R[⊥] : CommAlgebra R ℓ
-    R[⊥] = Polynomials 0
+    R[⊥] = Polynomials R 0
 
     emptyGen : FinVec (fst R[⊥]) 0
     emptyGen = λ ()
 
     R[⊥]/⟨0⟩ : CommAlgebra R ℓ
-    R[⊥]/⟨0⟩ = FPAlgebra 0 emptyGen
+    R[⊥]/⟨0⟩ = mkFPAlgebra 0 emptyGen
 
   R[⊥]/⟨0⟩IsInitial : (B : CommAlgebra R ℓ)
                      → isContr (CommAlgebraHom R[⊥]/⟨0⟩ B)
@@ -135,7 +135,7 @@ module _ (R : CommRing ℓ) where
       where open CommAlgebraStr (snd R[⊥])
 
     R[⊥]/⟨1⟩ : CommAlgebra R ℓ
-    R[⊥]/⟨1⟩ = FPAlgebra 0 unitGen
+    R[⊥]/⟨1⟩ = mkFPAlgebra 0 unitGen
 
   terminalCAlgFP : FinitePresentation (TerminalCAlg R)
   n terminalCAlgFP = 0
@@ -156,10 +156,10 @@ module _ (R : CommRing ℓ) where
 
     open CommAlgebraStr ⦃...⦄
     private
-      rels : FinVec ⟨ Polynomials {R = R} 0 ⟩ m
+      rels : FinVec ⟨ Polynomials R 0 ⟩ m
       rels = Construction.const ∘ xs
 
-      B = FPAlgebra 0 rels
+      B = mkFPAlgebra 0 rels
 
       π = quotientHom (initialCAlg R) ⟨xs⟩
       instance
