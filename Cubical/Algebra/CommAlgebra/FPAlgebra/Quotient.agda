@@ -25,7 +25,6 @@ open import Cubical.Algebra.CommRing.FGIdeal using (inclOfFGIdeal)
 open import Cubical.Algebra.CommAlgebra
 open import Cubical.Algebra.CommAlgebra.FreeCommAlgebra
   renaming (inducedHom to freeInducedHom)
-import Cubical.Algebra.CommAlgebra.Quotient as QA
 open import Cubical.Algebra.CommAlgebra.Ideal using (IdealsIn)
 open import Cubical.Algebra.CommAlgebra.FGIdeal
 import Cubical.Algebra.CommAlgebra.FGIdeal.Quotient as FGQ
@@ -50,6 +49,11 @@ private
     {k : ℕ}
     (r' : FinVec ⟨ Polynomials R n FGQ./ r ⟩ k)
     where
+
+    π = FGQ.quotientHom (Polynomials R n) r
+
+    _ : ∃[ r'lift ∈ FinVec ⟨ Polynomials R n ⟩ k ] ((i : _) → π $a (r'lift i) ≡ r' i)
+    _ = {!!}
 
     _ : isFPAlgebra ((Polynomials R n FGQ./ r) FGQ./ r')
     _ = {!!}

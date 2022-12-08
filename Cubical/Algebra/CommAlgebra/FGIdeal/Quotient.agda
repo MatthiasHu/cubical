@@ -17,5 +17,15 @@ private
     ℓ ℓ' : Level
     R : CommRing ℓ
 
-_/_ : {R : CommRing ℓ} → (A : CommAlgebra R ℓ') → {n : ℕ} → FinVec ⟨ A ⟩ n → CommAlgebra R _
-A / r = A Q./ generatedIdeal A r
+module _
+  {R : CommRing ℓ}
+  (A : CommAlgebra R ℓ')
+  {n : ℕ}
+  (r : FinVec ⟨ A ⟩ n)
+  where
+
+  _/_ : CommAlgebra R _
+  _/_ = A Q./ generatedIdeal A r
+
+  quotientHom : CommAlgebraHom A _/_
+  quotientHom = Q.quotientHom A (generatedIdeal A r)
