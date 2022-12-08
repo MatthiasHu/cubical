@@ -1,5 +1,5 @@
 {-
-  This module shows, that a an FP-R-algebra A,
+  This module shows, that an FP-R-algebra A,
   modulo relations ⟨r₁,...,rₙ⟩ is again an FP-R-algebra.
 -}
 {-# OPTIONS --safe #-}
