@@ -14,15 +14,15 @@ open import Cubical.Data.Unit
 
 private
   variable
-    ℓ : Level
+    ℓ ℓ' : Level
 
-module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) where
+module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ') where
   IdealsIn : Type _
   IdealsIn = IdealsInCommRing (CommAlgebra→CommRing A)
 
   open CommAlgebraStr (snd A)
 
-  makeIdeal : (I : fst A → hProp ℓ)
+  makeIdeal : (I : fst A → hProp ℓ')
               → (+-closed : {x y : fst A} → x ∈ I → y ∈ I → (x + y) ∈ I)
               → (0-closed : 0a ∈ I)
               → (·-closedLeft : {x : fst A} → (r : fst A) → x ∈ I → r · x ∈ I)

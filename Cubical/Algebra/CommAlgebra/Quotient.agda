@@ -1,5 +1,5 @@
 {-# OPTIONS --safe #-}
-module Cubical.Algebra.CommAlgebra.QuotientAlgebra where
+module Cubical.Algebra.CommAlgebra.Quotient where
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Equiv
@@ -28,7 +28,7 @@ open AlgebraHoms using (compAlgebraHom)
 
 private
   variable
-    ℓ : Level
+    ℓ ℓ' : Level
 
 {-
   The definition of the quotient algebra (_/_ below) is marked abstract to avoid
@@ -37,7 +37,7 @@ private
   modules share an abstract scope but named modules do not.
 -}
 
-module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) (I : IdealsIn A) where abstract
+module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ') (I : IdealsIn A) where abstract
   open CommRingStr {{...}} hiding (_-_; -_; ·IdL ; ·DistR+) renaming (_·_ to _·R_; _+_ to _+R_)
   open CommAlgebraStr {{...}}
   open RingTheory (CommRing→Ring (CommAlgebra→CommRing A)) using (-DistR·)
@@ -47,7 +47,7 @@ module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) (I : IdealsIn A) where abstr
     _ : CommAlgebraStr R ⟨ A ⟩
     _ = snd A
 
-  _/_ : CommAlgebra R ℓ
+  _/_ : CommAlgebra R ℓ'
   _/_ = commAlgebraFromCommRing
            A/IAsCommRing
            (λ r → elim (λ _ → squash/) (λ x → [ r ⋆ x ]) (eq r))
@@ -67,7 +67,7 @@ module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) (I : IdealsIn A) where abstr
                                        r ⋆ (x · y) ∎) i ]
 
           where
-                A/IAsCommRing : CommRing ℓ
+                A/IAsCommRing : CommRing ℓ'
                 A/IAsCommRing = (CommAlgebra→CommRing A) CommRing./ I
                 [_]/ : ⟨ A ⟩ → ⟨ A/IAsCommRing ⟩
                 [_]/ = CommRing.[_]/ {R = CommAlgebra→CommRing A} {I = I}

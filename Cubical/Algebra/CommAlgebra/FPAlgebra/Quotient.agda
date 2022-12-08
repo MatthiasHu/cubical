@@ -18,17 +18,17 @@ open import Cubical.Data.Vec
 open import Cubical.Data.Sigma
 open import Cubical.Data.Empty
 
-open import Cubical.HITs.PropositionalTruncation
+open import Cubical.HITs.PropositionalTruncation as PT
 
 open import Cubical.Algebra.CommRing
 open import Cubical.Algebra.CommRing.FGIdeal using (inclOfFGIdeal)
 open import Cubical.Algebra.CommAlgebra
 open import Cubical.Algebra.CommAlgebra.FreeCommAlgebra
   renaming (inducedHom to freeInducedHom)
-open import Cubical.Algebra.CommAlgebra.QuotientAlgebra
-  renaming (inducedHom to quotientInducedHom)
+import Cubical.Algebra.CommAlgebra.Quotient as QA
 open import Cubical.Algebra.CommAlgebra.Ideal using (IdealsIn)
 open import Cubical.Algebra.CommAlgebra.FGIdeal
+import Cubical.Algebra.CommAlgebra.FGIdeal.Quotient as FGQ
 open import Cubical.Algebra.CommAlgebra.Instances.Initial
 open import Cubical.Algebra.CommAlgebra.Instances.Unit
   renaming (UnitCommAlgebra to TerminalCAlg)
@@ -41,9 +41,27 @@ private
   variable
     ℓ ℓ' : Level
 
+private
+  module Proof
+    {R : CommRing ℓ}
+    (n : ℕ)
+    {m : ℕ}
+    (r : FinVec ⟨ Polynomials R n ⟩ m)
+    {k : ℕ}
+    (r' : FinVec ⟨ Polynomials R n FGQ./ r ⟩ k)
+    where
 
-module _ (R : CommRing ℓ) (A : FPAlgebra R ℓ') (n : ℕ) (r : Vec ⟨ A ⟩ n) where
+    _ : isFPAlgebra ((Polynomials R n FGQ./ r) FGQ./ r')
+    _ = {!!}
+
+
+module _ {R : CommRing ℓ} (A : FPAlgebra R ℓ) {k : ℕ} (r' : FinVec ⟨ A ⟩ k) where
   open FinitePresentation
 
-  
-  
+  A-CAlg : CommAlgebra R ℓ
+  A-CAlg = FPAlgebra→CommAlgebra A
+
+  isFPAlgQuotient : isFPAlgebra (A-CAlg FGQ./ r')
+  isFPAlgQuotient = PT.rec isPropPropTrunc (λ{ ((n , m) , r , equiv) → {!!}}) (FPAlgebra→∃ A)
+
+  _/_ = FPAlgebraFromCommAlgebra (A-CAlg FGQ./ r') isFPAlgQuotient

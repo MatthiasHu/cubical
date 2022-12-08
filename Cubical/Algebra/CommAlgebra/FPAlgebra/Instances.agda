@@ -31,7 +31,7 @@ open import Cubical.Algebra.CommRing.FGIdeal using (inclOfFGIdeal)
 open import Cubical.Algebra.CommAlgebra
 open import Cubical.Algebra.CommAlgebra.FreeCommAlgebra
   renaming (inducedHom to freeInducedHom)
-open import Cubical.Algebra.CommAlgebra.QuotientAlgebra
+open import Cubical.Algebra.CommAlgebra.Quotient
   renaming (inducedHom to quotientInducedHom)
 open import Cubical.Algebra.CommAlgebra.Ideal using (IdealsIn)
 open import Cubical.Algebra.CommAlgebra.FGIdeal
