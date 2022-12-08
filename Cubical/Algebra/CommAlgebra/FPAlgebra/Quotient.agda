@@ -13,6 +13,7 @@ open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Structure
 
 open import Cubical.Data.FinData
+open import Cubical.Data.FinData.FiniteChoice
 open import Cubical.Data.Nat
 open import Cubical.Data.Vec
 open import Cubical.Data.Sigma
@@ -53,7 +54,7 @@ private
     π = FGQ.quotientHom (Polynomials R n) r
 
     _ : ∃[ r'lift ∈ FinVec ⟨ Polynomials R n ⟩ k ] ((i : _) → π $a (r'lift i) ≡ r' i)
-    _ = {!!}
+    _ = PT.map {!!} (finiteChoice _ (λ i → ∃[ r'i-lift ∈ (⟨ Polynomials R n ⟩) ] π  $a r'i-lift  ≡ r' i) {!!})
 
     _ : isFPAlgebra ((Polynomials R n FGQ./ r) FGQ./ r')
     _ = {!!}

@@ -6,6 +6,7 @@ open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Powerset using (_∈_; _⊆_)
 open import Cubical.Foundations.Structure
+open import Cubical.Functions.Surjection
 
 open import Cubical.HITs.SetQuotients hiding (_/_)
 open import Cubical.Data.Unit
@@ -91,6 +92,9 @@ module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ') (I : IdealsIn A) where abst
   IsAlgebraHom.pres· (snd quotientHom) _ _ = refl
   IsAlgebraHom.pres- (snd quotientHom) _ = refl
   IsAlgebraHom.pres⋆ (snd quotientHom) _ _ = refl
+
+  quotientHomSurjective : isSurjection (fst quotientHom)
+  quotientHomSurjective = []surjective
 
 module _ {R : CommRing ℓ} (A : CommAlgebra R ℓ) (I : IdealsIn A) where abstract
   open CommRingStr {{...}} hiding (_-_; -_; ·IdL; ·DistR+) renaming (_·_ to _·R_; _+_ to _+R_)

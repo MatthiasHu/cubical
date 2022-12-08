@@ -6,6 +6,7 @@ open import Cubical.Foundations.Structure
 
 open import Cubical.Data.FinData
 open import Cubical.Data.Nat
+open import Cubical.HITs.SetQuotients hiding (_/_)
 
 open import Cubical.Algebra.CommRing.Base
 open import Cubical.Algebra.CommAlgebra.Base
@@ -29,3 +30,5 @@ module _
 
   quotientHom : CommAlgebraHom A _/_
   quotientHom = Q.quotientHom A (generatedIdeal A r)
+
+  quotientHomSurjective = []surjective
