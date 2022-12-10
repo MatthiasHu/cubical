@@ -6,10 +6,12 @@ open import Cubical.Foundations.Structure
 
 open import Cubical.Data.FinData
 open import Cubical.Data.Nat
+open import Cubical.Data.Sigma
 open import Cubical.HITs.SetQuotients hiding (_/_)
 
 open import Cubical.Algebra.CommRing.Base
 open import Cubical.Algebra.CommAlgebra.Base
+open import Cubical.Algebra.Algebra.Base using (_$a_)
 open import Cubical.Algebra.CommAlgebra.FGIdeal
 import Cubical.Algebra.CommAlgebra.Quotient as Q
 
@@ -31,4 +33,5 @@ module _
   quotientHom : CommAlgebraHom A _/_
   quotientHom = Q.quotientHom A (generatedIdeal A r)
 
-  quotientHomSurjective = []surjective
+  quotientHomSurjective : (x : ⟨ _/_ ⟩) → ∃[ y ∈ ⟨ A ⟩ ] quotientHom $a y ≡ x
+  quotientHomSurjective = Q.quotientHomSurjective A (generatedIdeal A r)
