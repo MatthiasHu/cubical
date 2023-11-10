@@ -62,20 +62,22 @@ module _ {R : CommRing ℓ} where
 
     relationsIdeal = generatedIdeal (Polynomials n) relation
 
-    abstract
-      {-
-        The following definitions are abstract because of type checking speed
-        problems - complete unfolding of FPAlgebra is triggered otherwise.
-        This also means, the where blocks contain more type declarations than usual.
-      -}
+    opaque
       FPAlgebra : CommAlgebra R ℓ
       FPAlgebra = Polynomials n / relationsIdeal
 
+    opaque
       modRelations : CommAlgebraHom (Polynomials n) (Polynomials n / relationsIdeal)
       modRelations = quotientHom (Polynomials n) relationsIdeal
 
+    opaque
+      unfolding FPAlgebra
+
       generator : (i : Fin n) → ⟨ FPAlgebra ⟩
       generator = fst modRelations ∘ var
+
+    opaque
+      unfolding generator modRelations
 
       relationsHold : (i : Fin m) → evPoly FPAlgebra (relation i) generator ≡ 0a (snd FPAlgebra)
       relationsHold i =
@@ -91,28 +93,26 @@ module _ {R : CommRing ℓ} where
                            (incInIdeal (Polynomials n) relation i ) ⟩
         0a (snd FPAlgebra) ∎
 
-      module _
-        (A : CommAlgebra R ℓ)
-        (values : FinVec ⟨ A ⟩ n)
-        (relationsHold : (i : Fin m) → evPoly A (relation i) values ≡ 0a (snd A))
-        where abstract
-        {-
-          We repeat the abstract keyword here because the contents of a child module are not
-          covered by the outer abstract keyword. This behaves like a single big abstract
-          block as long as the child module is anonymous.
-        -}
+    module _
+      (A : CommAlgebra R ℓ)
+      (values : FinVec ⟨ A ⟩ n)
+      (relationsHold : (i : Fin m) → evPoly A (relation i) values ≡ 0a (snd A))
+      where
 
-        private
-          freeHom : CommAlgebraHom (Polynomials n) A
-          freeHom = freeInducedHom A values
+      private
+        freeHom : CommAlgebraHom (Polynomials n) A
+        freeHom = freeInducedHom A values
 
-          isInKernel :   fst (generatedIdeal (Polynomials n) relation)
-                       ⊆ fst (kernel (Polynomials n) A freeHom)
-          isInKernel = inclOfFGIdeal
-                         (CommAlgebra→CommRing (Polynomials n))
-                         relation
-                         (kernel (Polynomials n) A freeHom)
-                         relationsHold
+        isInKernel :   fst (generatedIdeal (Polynomials n) relation)
+                     ⊆ fst (kernel (Polynomials n) A freeHom)
+        isInKernel = inclOfFGIdeal
+                       (CommAlgebra→CommRing (Polynomials n))
+                       relation
+                       (kernel (Polynomials n) A freeHom)
+                       relationsHold
+
+      opaque
+        unfolding FPAlgebra
 
         inducedHom : CommAlgebraHom FPAlgebra A
         inducedHom =
@@ -123,12 +123,18 @@ module _ {R : CommRing ℓ} where
             freeHom
             isInKernel
 
+      opaque
+        unfolding inducedHom generator modRelations
+
         inducedHomOnGenerators :
           (i : Fin n)
           → fst inducedHom (generator i) ≡ values i
         inducedHomOnGenerators i =
           cong (λ f → fst f (var i))
           (inducedHom∘quotientHom (Polynomials n) relationsIdeal A freeHom isInKernel)
+
+      opaque
+        unfolding inducedHom generator modRelations
 
         unique :
              (f : CommAlgebraHom FPAlgebra A)
@@ -164,6 +170,7 @@ module _ {R : CommRing ℓ} where
             inv : retract (Iso.fun (homMapIso {I = Fin n} A)) (Iso.inv (homMapIso A))
             inv = Iso.leftInv (homMapIso {R = R} {I = Fin n} A)
 
+      opaque
         universal :
           isContr (Σ[ f ∈ CommAlgebraHom FPAlgebra A ] ((i : Fin n) → fst f (generator i) ≡ values i))
         universal =
@@ -174,17 +181,24 @@ module _ {R : CommRing ℓ} where
           where
           open CommAlgebraStr (str A)
 
-      {- ∀ A : Comm-R-Algebra,
-         ∀ J : Finitely-generated-Ideal,
-         Hom(R[I]/J,A) is isomorphic to the Set of roots of the generators of J
-      -}
+    {- ∀ A : Comm-R-Algebra,
+       ∀ J : Finitely-generated-Ideal,
+       Hom(R[I]/J,A) is isomorphic to the Set of roots of the generators of J
+    -}
 
+    opaque
       zeroLocus : (A : CommAlgebra R ℓ) → Type ℓ
       zeroLocus A = Σ[ v ∈ FinVec ⟨ A ⟩ n ] ((i : Fin m) → evPoly A (relation i) v ≡ 0a (snd A))
+
+    opaque
+      unfolding zeroLocus
 
       inducedHomFP : (A : CommAlgebra R ℓ) →
                       zeroLocus A → CommAlgebraHom FPAlgebra A
       inducedHomFP A d = inducedHom A (fst d) (snd d)
+
+    opaque
+      unfolding FPAlgebra zeroLocus generator
 
       evaluateAtFP : {A : CommAlgebra R ℓ} →
                       CommAlgebraHom FPAlgebra A → zeroLocus A
@@ -210,6 +224,9 @@ module _ {R : CommRing ℓ} where
           step1 : (x : ⟨ Polynomials n ⟩) → evPoly A x value ≡ fst compHom (evPoly (Polynomials n) x var)
           step1 x = sym (evPolyHomomorphic (Polynomials n) A compHom x var)
 
+    opaque
+      unfolding zeroLocus inducedHomFP evaluateAtFP
+
       FPHomIso : {A : CommAlgebra R ℓ} →
                   Iso (CommAlgebraHom FPAlgebra A) (zeroLocus A)
       Iso.fun FPHomIso = evaluateAtFP
@@ -232,9 +249,11 @@ module _ {R : CommRing ℓ} where
                              (λ j → refl)
                              i)
 
+    opaque
       homMapPathFP : (A : CommAlgebra R ℓ)→ CommAlgebraHom FPAlgebra A ≡ zeroLocus A
       homMapPathFP A = isoToPath (FPHomIso {A})
 
+    opaque
       isSetZeroLocus : (A : CommAlgebra R ℓ) → isSet (zeroLocus A)
       isSetZeroLocus A =  J (λ y _ → isSet y)
                        (isSetAlgebraHom (CommAlgebra→Algebra FPAlgebra) (CommAlgebra→Algebra A))
@@ -252,3 +271,4 @@ module _ {R : CommRing ℓ} where
 
   isFPAlgebraIsProp : {A : CommAlgebra R ℓ} → isProp (isFPAlgebra A)
   isFPAlgebraIsProp = isPropPropTrunc
+
