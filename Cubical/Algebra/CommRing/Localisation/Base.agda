@@ -63,8 +63,9 @@ module Loc (R' : CommRing ℓ) (S' : ℙ (fst R')) (SMultClosedSubset : isMultCl
   _≈_ : R × S → R × S → Type ℓ
   (r₁ , s₁) ≈ (r₂ , s₂) = Σ[ s ∈ S ] (fst s · r₁ · fst s₂ ≡ fst s · r₂ · fst s₁)
 
-  S⁻¹R : Type ℓ
-  S⁻¹R = (R × S) / _≈_
+  opaque
+    S⁻¹R : Type ℓ
+    S⁻¹R = (R × S) / _≈_
 
   -- now define addition for S⁻¹R
   open BinaryRelation
@@ -102,156 +103,194 @@ module Loc (R' : CommRing ℓ) (S' : ℙ (fst R')) (SMultClosedSubset : isMultCl
   isEquivRel.symmetric locIsEquivRel = locSym
   isEquivRel.transitive locIsEquivRel = locTrans
 
-  _+ₗ_ : S⁻¹R → S⁻¹R → S⁻¹R
-  _+ₗ_ = setQuotSymmBinOp locRefl locTrans _+ₚ_
-          (λ a b → subst (λ x → (a +ₚ b) ≈ x) (+ₚ-symm a b) (locRefl (a +ₚ b))) θ
-    where
-    _+ₚ_ : R × S → R × S → R × S
-    (r₁ , s₁ , s₁∈S) +ₚ (r₂ , s₂ , s₂∈S) =
-                        (r₁ · s₂ + r₂ · s₁) , (s₁ · s₂) , SMultClosedSubset .multClosed s₁∈S s₂∈S
+  opaque
+    unfolding S⁻¹R
 
-    +ₚ-symm : (a b : R × S) → (a +ₚ b) ≡ (b +ₚ a)
-    +ₚ-symm (r₁ , s₁ , s₁∈S) (r₂ , s₂ , s₂∈S) =
-            ΣPathP (+Comm _ _ , Σ≡Prop (λ x → S' x .snd) (·Comm _ _))
-
-    θ : (a a' b : R × S) → a ≈ a' → (a +ₚ b) ≈ (a' +ₚ b)
-    θ (r₁ , s₁ , s₁∈S) (r'₁ , s'₁ , s'₁∈S) (r₂ , s₂ , s₂∈S) ((s , s∈S) , p) = (s , s∈S) , path
+    _+ₗ_ : S⁻¹R → S⁻¹R → S⁻¹R
+    _+ₗ_ = setQuotSymmBinOp locRefl locTrans _+ₚ_
+            (λ a b → subst (λ x → (a +ₚ b) ≈ x) (+ₚ-symm a b) (locRefl (a +ₚ b))) θ
       where
-      eq1 : (r₁ s₁ r'₁ s'₁ s'₁ r₂ s₂ s : R)
-          → s · (r₁ · s₂ + r₂ · s₁) · (s'₁ · s₂) ≡ s · r₁ · s'₁ · s₂ · s₂ + s · r₂ · s₁ · s'₁ · s₂
-      eq1 = solve R'
+      _+ₚ_ : R × S → R × S → R × S
+      (r₁ , s₁ , s₁∈S) +ₚ (r₂ , s₂ , s₂∈S) =
+                          (r₁ · s₂ + r₂ · s₁) , (s₁ · s₂) , SMultClosedSubset .multClosed s₁∈S s₂∈S
 
-      eq2 : (r₁ s₁ r'₁ s'₁ s'₁ r₂ s₂ s : R)
-          → s · r'₁ · s₁ · s₂ · s₂ + s · r₂ · s₁ · s'₁ · s₂ ≡ s · (r'₁ · s₂ + r₂ · s'₁) · (s₁ · s₂)
-      eq2 = solve R'
+      +ₚ-symm : (a b : R × S) → (a +ₚ b) ≡ (b +ₚ a)
+      +ₚ-symm (r₁ , s₁ , s₁∈S) (r₂ , s₂ , s₂∈S) =
+              ΣPathP (+Comm _ _ , Σ≡Prop (λ x → S' x .snd) (·Comm _ _))
 
+      θ : (a a' b : R × S) → a ≈ a' → (a +ₚ b) ≈ (a' +ₚ b)
+      θ (r₁ , s₁ , s₁∈S) (r'₁ , s'₁ , s'₁∈S) (r₂ , s₂ , s₂∈S) ((s , s∈S) , p) = (s , s∈S) , path
+        where
+        eq1 : (r₁ s₁ r'₁ s'₁ s'₁ r₂ s₂ s : R)
+            → s · (r₁ · s₂ + r₂ · s₁) · (s'₁ · s₂) ≡ s · r₁ · s'₁ · s₂ · s₂ + s · r₂ · s₁ · s'₁ · s₂
+        eq1 = solve R'
 
-      path : s · (r₁ · s₂ + r₂ · s₁) · (s'₁ · s₂) ≡ s · (r'₁ · s₂ + r₂ · s'₁) · (s₁ · s₂)
-      path = s · (r₁ · s₂ + r₂ · s₁) · (s'₁ · s₂)
-
-           ≡⟨ eq1 r₁ s₁ r'₁ s'₁ s'₁ r₂ s₂ s ⟩
-
-             s · r₁ · s'₁ · s₂ · s₂ + s · r₂ · s₁ · s'₁ · s₂
-
-           ≡⟨ cong (λ x → x · s₂ · s₂ + s · r₂ · s₁ · s'₁ · s₂) p ⟩
-
-             s · r'₁ · s₁ · s₂ · s₂ + s · r₂ · s₁ · s'₁ · s₂
-
-           ≡⟨ eq2 r₁ s₁ r'₁ s'₁ s'₁ r₂ s₂ s ⟩
-
-             s · (r'₁ · s₂ + r₂ · s'₁) · (s₁ · s₂) ∎
+        eq2 : (r₁ s₁ r'₁ s'₁ s'₁ r₂ s₂ s : R)
+            → s · r'₁ · s₁ · s₂ · s₂ + s · r₂ · s₁ · s'₁ · s₂ ≡ s · (r'₁ · s₂ + r₂ · s'₁) · (s₁ · s₂)
+        eq2 = solve R'
 
 
-  -- check group-laws for addition
-  +ₗ-assoc : (x y z : S⁻¹R) → x +ₗ (y +ₗ z) ≡ (x +ₗ y) +ₗ z
-  +ₗ-assoc = SQ.elimProp3 (λ _ _ _ → squash/ _ _) +ₗ-assoc[]
-    where
-    +ₗ-assoc[] : (a b c : R × S) → [ a ] +ₗ ([ b ] +ₗ [ c ]) ≡ ([ a ] +ₗ [ b ]) +ₗ [ c ]
-    +ₗ-assoc[] (r , s , s∈S) (r' , s' , s'∈S) (r'' , s'' , s''∈S) =
-      cong [_] (ΣPathP ((path r s r' s' r'' s'') , Σ≡Prop (λ x → ∈-isProp S' x) (·Assoc _ _ _)))
+        path : s · (r₁ · s₂ + r₂ · s₁) · (s'₁ · s₂) ≡ s · (r'₁ · s₂ + r₂ · s'₁) · (s₁ · s₂)
+        path = s · (r₁ · s₂ + r₂ · s₁) · (s'₁ · s₂)
+
+             ≡⟨ eq1 r₁ s₁ r'₁ s'₁ s'₁ r₂ s₂ s ⟩
+
+               s · r₁ · s'₁ · s₂ · s₂ + s · r₂ · s₁ · s'₁ · s₂
+
+             ≡⟨ cong (λ x → x · s₂ · s₂ + s · r₂ · s₁ · s'₁ · s₂) p ⟩
+
+               s · r'₁ · s₁ · s₂ · s₂ + s · r₂ · s₁ · s'₁ · s₂
+
+             ≡⟨ eq2 r₁ s₁ r'₁ s'₁ s'₁ r₂ s₂ s ⟩
+
+               s · (r'₁ · s₂ + r₂ · s'₁) · (s₁ · s₂) ∎
+
+
+  opaque
+    unfolding _+ₗ_
+
+    -- check group-laws for addition
+    +ₗ-assoc : (x y z : S⁻¹R) → x +ₗ (y +ₗ z) ≡ (x +ₗ y) +ₗ z
+    +ₗ-assoc = elimProp3 (λ _ _ _ → squash/ _ _) +ₗ-assoc[]
       where
-      path : (r s r' s' r'' s'' : R)
-           → r · (s' · s'') + (r' · s'' + r'' · s') · s ≡ (r · s' + r' · s) · s'' + r'' · (s · s')
-      path = solve R'
+      +ₗ-assoc[] : (a b c : R × S) → [ a ] +ₗ ([ b ] +ₗ [ c ]) ≡ ([ a ] +ₗ [ b ]) +ₗ [ c ]
+      +ₗ-assoc[] (r , s , s∈S) (r' , s' , s'∈S) (r'' , s'' , s''∈S) =
+        cong [_] (ΣPathP ((path r s r' s' r'' s'') , Σ≡Prop (λ x → ∈-isProp S' x) (·Assoc _ _ _)))
+        where
+        path : (r s r' s' r'' s'' : R)
+             → r · (s' · s'') + (r' · s'' + r'' · s') · s ≡ (r · s' + r' · s) · s'' + r'' · (s · s')
+        path = solve R'
 
-  0ₗ : S⁻¹R
-  0ₗ = [ 0r , 1r , SMultClosedSubset .containsOne ]
+  opaque
+    unfolding S⁻¹R
 
-  +ₗ-rid : (x : S⁻¹R) → x +ₗ 0ₗ ≡ x
-  +ₗ-rid = SQ.elimProp (λ _ → squash/ _ _) +ₗ-rid[]
-    where
-    +ₗ-rid[] : (a : R × S) → [ a ] +ₗ 0ₗ ≡ [ a ]
-    +ₗ-rid[] (r , s , s∈S) = path
+    0ₗ : S⁻¹R
+    0ₗ = [ 0r , 1r , SMultClosedSubset .containsOne ]
+
+  opaque
+    unfolding _+ₗ_ 0ₗ
+
+    +ₗ-rid : (x : S⁻¹R) → x +ₗ 0ₗ ≡ x
+    +ₗ-rid = elimProp (λ _ → squash/ _ _) +ₗ-rid[]
       where
-      eq1 : (r s : R) → r · 1r + 0r · s ≡ r
-      eq1 = solve R'
+      +ₗ-rid[] : (a : R × S) → [ a ] +ₗ 0ₗ ≡ [ a ]
+      +ₗ-rid[] (r , s , s∈S) = path
+        where
+        eq1 : (r s : R) → r · 1r + 0r · s ≡ r
+        eq1 = solve R'
 
-      path : [ r · 1r + 0r · s , s · 1r , SMultClosedSubset .multClosed s∈S
-                                         (SMultClosedSubset .containsOne) ]
-           ≡ [ r , s , s∈S ]
-      path = cong [_] (ΣPathP (eq1 r s , Σ≡Prop (λ x → ∈-isProp S' x) (·IdR _)))
+        path :
+          -- For some reason, `opaque` forces us to give the implicit argument here.
+          _≡_ {A = S⁻¹R}
+            [ r · 1r + 0r · s , s · 1r , SMultClosedSubset .multClosed s∈S
+                                           (SMultClosedSubset .containsOne) ]
+            [ r , s , s∈S ]
+        path = cong [_] (ΣPathP (eq1 r s , Σ≡Prop (λ x → ∈-isProp S' x) (·IdR _)))
 
-  -ₗ_ : S⁻¹R → S⁻¹R
-  -ₗ_ = SQ.rec squash/ -ₗ[] -ₗWellDef
-    where
-    -ₗ[] : R × S → S⁻¹R
-    -ₗ[] (r , s) = [ - r , s ]
+  opaque
+    unfolding S⁻¹R
 
-    -ₗWellDef : (a b : R × S) → a ≈ b → -ₗ[] a ≡ -ₗ[] b
-    -ₗWellDef (r , s , _) (r' , s' , _) ((u , u∈S) , p) = eq/ _ _ ((u , u∈S) , path)
+    -ₗ_ : S⁻¹R → S⁻¹R
+    -ₗ_ = SQ.rec squash/ -ₗ[] -ₗWellDef
       where
-      eq1 : (u r s' : R) → u · - r · s' ≡ - (u · r · s')
-      eq1 = solve R'
+      -ₗ[] : R × S → S⁻¹R
+      -ₗ[] (r , s) = [ - r , s ]
 
-      eq2 : (u r' s : R) → - (u · r' · s) ≡ u · - r' · s
-      eq2 = solve R'
+      -ₗWellDef : (a b : R × S) → a ≈ b → -ₗ[] a ≡ -ₗ[] b
+      -ₗWellDef (r , s , _) (r' , s' , _) ((u , u∈S) , p) = eq/ _ _ ((u , u∈S) , path)
+        where
+        eq1 : (u r s' : R) → u · - r · s' ≡ - (u · r · s')
+        eq1 = solve R'
 
-      path : u · - r · s' ≡ u · - r' · s
-      path = eq1 u r s' ∙∙ cong -_ p ∙∙ eq2 u r' s
+        eq2 : (u r' s : R) → - (u · r' · s) ≡ u · - r' · s
+        eq2 = solve R'
 
-  +ₗ-rinv : (x : S⁻¹R) → x +ₗ (-ₗ x) ≡ 0ₗ
-  +ₗ-rinv = SQ.elimProp (λ _ → squash/ _ _) +ₗ-rinv[]
-    where
-    +ₗ-rinv[] : (a : R × S) → ([ a ] +ₗ (-ₗ [ a ])) ≡ 0ₗ
-    +ₗ-rinv[] (r , s , s∈S) = eq/ _ _ ((1r , SMultClosedSubset .containsOne) , path r s)
+        path : u · - r · s' ≡ u · - r' · s
+        path = eq1 u r s' ∙∙ cong -_ p ∙∙ eq2 u r' s
+
+  opaque
+    unfolding _+ₗ_ -ₗ_ 0ₗ
+
+    +ₗ-rinv : (x : S⁻¹R) → x +ₗ (-ₗ x) ≡ 0ₗ
+    +ₗ-rinv = SQ.elimProp (λ _ → squash/ _ _) +ₗ-rinv[]
       where
-      path : (r s : R) → 1r · (r · s + - r · s) · 1r ≡ 1r · 0r · (s · s)
-      path = solve R'
+      +ₗ-rinv[] : (a : R × S) → ([ a ] +ₗ (-ₗ [ a ])) ≡ 0ₗ
+      +ₗ-rinv[] (r , s , s∈S) = eq/ _ _ ((1r , SMultClosedSubset .containsOne) , path r s)
+        where
+        path : (r s : R) → 1r · (r · s + - r · s) · 1r ≡ 1r · 0r · (s · s)
+        path = solve R'
 
-  +ₗ-comm : (x y : S⁻¹R) → x +ₗ y ≡ y +ₗ x
-  +ₗ-comm = SQ.elimProp2 (λ _ _ → squash/ _ _) +ₗ-comm[]
-    where
-    +ₗ-comm[] : (a b : R × S) → ([ a ] +ₗ [ b ]) ≡ ([ b ] +ₗ [ a ])
-    +ₗ-comm[] (r , s , s∈S) (r' , s' , s'∈S) =
-              cong [_] (ΣPathP ((+Comm _ _) , Σ≡Prop (λ x → ∈-isProp S' x) (·Comm _ _)))
+  opaque
+    unfolding _+ₗ_
+
+    +ₗ-comm : (x y : S⁻¹R) → x +ₗ y ≡ y +ₗ x
+    +ₗ-comm = SQ.elimProp2 (λ _ _ → squash/ _ _) +ₗ-comm[]
+      where
+      +ₗ-comm[] : (a b : R × S) → ([ a ] +ₗ [ b ]) ≡ ([ b ] +ₗ [ a ])
+      +ₗ-comm[] (r , s , s∈S) (r' , s' , s'∈S) =
+                cong [_] (ΣPathP ((+Comm _ _) , Σ≡Prop (λ x → ∈-isProp S' x) (·Comm _ _)))
 
 
   -- Now for multiplication
-  _·ₗ_ : S⁻¹R → S⁻¹R → S⁻¹R
-  _·ₗ_ = setQuotSymmBinOp locRefl locTrans _·ₚ_
-          (λ a b → subst (λ x → (a ·ₚ b) ≈ x) (·ₚ-symm a b) (locRefl (a ·ₚ b))) θ
-    where
-    _·ₚ_ : R × S → R × S → R × S
-    (r₁ , s₁ , s₁∈S) ·ₚ (r₂ , s₂ , s₂∈S) =
-                        (r₁ · r₂) , ((s₁ · s₂) , SMultClosedSubset .multClosed s₁∈S s₂∈S)
+  opaque
+    unfolding S⁻¹R
 
-    ·ₚ-symm : (a b : R × S) → (a ·ₚ b) ≡ (b ·ₚ a)
-    ·ₚ-symm (r₁ , s₁ , s₁∈S) (r₂ , s₂ , s₂∈S) =
-            ΣPathP (·Comm _ _ , Σ≡Prop (λ x → S' x .snd) (·Comm _ _))
-
-    θ : (a a' b : R × S) → a ≈ a' → (a ·ₚ b) ≈ (a' ·ₚ b)
-    θ (r₁ , s₁ , s₁∈S) (r'₁ , s'₁ , s'₁∈S) (r₂ , s₂ , s₂∈S) ((s , s∈S) , p) = (s , s∈S) , path
+    _·ₗ_ : S⁻¹R → S⁻¹R → S⁻¹R
+    _·ₗ_ = setQuotSymmBinOp locRefl locTrans _·ₚ_
+            (λ a b → subst (λ x → (a ·ₚ b) ≈ x) (·ₚ-symm a b) (locRefl (a ·ₚ b))) θ
       where
-      eq1 : (r₁ s₁ r'₁ s'₁ r₂ s₂ s : R)
-          → s · (r₁ · r₂) · (s'₁ · s₂) ≡ s · r₁ · s'₁ · r₂ · s₂
-      eq1 = solve R'
+      _·ₚ_ : R × S → R × S → R × S
+      (r₁ , s₁ , s₁∈S) ·ₚ (r₂ , s₂ , s₂∈S) =
+                          (r₁ · r₂) , ((s₁ · s₂) , SMultClosedSubset .multClosed s₁∈S s₂∈S)
 
-      eq2 : (r₁ s₁ r'₁ s'₁ r₂ s₂ s : R)
-          → s · r'₁ · s₁ · r₂ · s₂ ≡ s · (r'₁ · r₂) · (s₁ · s₂)
-      eq2 = solve R'
+      ·ₚ-symm : (a b : R × S) → (a ·ₚ b) ≡ (b ·ₚ a)
+      ·ₚ-symm (r₁ , s₁ , s₁∈S) (r₂ , s₂ , s₂∈S) =
+              ΣPathP (·Comm _ _ , Σ≡Prop (λ x → S' x .snd) (·Comm _ _))
 
-      path : s · (r₁ · r₂) · (s'₁ · s₂) ≡ s · (r'₁ · r₂) · (s₁ · s₂)
-      path = eq1 r₁ s₁ r'₁ s'₁ r₂ s₂ s ∙∙ cong (λ x → x · r₂ · s₂) p ∙∙ eq2 r₁ s₁ r'₁ s'₁ r₂ s₂ s
+      θ : (a a' b : R × S) → a ≈ a' → (a ·ₚ b) ≈ (a' ·ₚ b)
+      θ (r₁ , s₁ , s₁∈S) (r'₁ , s'₁ , s'₁∈S) (r₂ , s₂ , s₂∈S) ((s , s∈S) , p) = (s , s∈S) , path
+        where
+        eq1 : (r₁ s₁ r'₁ s'₁ r₂ s₂ s : R)
+            → s · (r₁ · r₂) · (s'₁ · s₂) ≡ s · r₁ · s'₁ · r₂ · s₂
+        eq1 = solve R'
+
+        eq2 : (r₁ s₁ r'₁ s'₁ r₂ s₂ s : R)
+            → s · r'₁ · s₁ · r₂ · s₂ ≡ s · (r'₁ · r₂) · (s₁ · s₂)
+        eq2 = solve R'
+
+        path : s · (r₁ · r₂) · (s'₁ · s₂) ≡ s · (r'₁ · r₂) · (s₁ · s₂)
+        path = eq1 r₁ s₁ r'₁ s'₁ r₂ s₂ s ∙∙ cong (λ x → x · r₂ · s₂) p ∙∙ eq2 r₁ s₁ r'₁ s'₁ r₂ s₂ s
 
 
   -- checking laws for multiplication
-  1ₗ : S⁻¹R
-  1ₗ = [ 1r , 1r , SMultClosedSubset .containsOne ]
+  opaque
+    unfolding S⁻¹R
 
-  ·ₗ-assoc : (x y z : S⁻¹R) → x ·ₗ (y ·ₗ z) ≡ (x ·ₗ y) ·ₗ z
-  ·ₗ-assoc = SQ.elimProp3 (λ _ _ _ → squash/ _ _) ·ₗ-assoc[]
-    where
-    ·ₗ-assoc[] : (a b c : R × S) → [ a ] ·ₗ ([ b ] ·ₗ [ c ]) ≡ ([ a ] ·ₗ [ b ]) ·ₗ [ c ]
-    ·ₗ-assoc[] (r , s , s∈S) (r' , s' , s'∈S) (r'' , s'' , s''∈S) =
-               cong [_] (ΣPathP ((·Assoc _ _ _) , Σ≡Prop (λ x → ∈-isProp S' x) (·Assoc _ _ _)))
+    1ₗ : S⁻¹R
+    1ₗ = [ 1r , 1r , SMultClosedSubset .containsOne ]
 
-  ·ₗ-rid : (x : S⁻¹R) → x ·ₗ 1ₗ ≡ x
-  ·ₗ-rid = SQ.elimProp (λ _ → squash/ _ _) ·ₗ-rid[]
-    where
-    ·ₗ-rid[] : (a : R × S) → ([ a ] ·ₗ 1ₗ) ≡ [ a ]
-    ·ₗ-rid[] (r , s , s∈S) = cong [_] (ΣPathP ((·IdR _) , Σ≡Prop (λ x → ∈-isProp S' x) (·IdR _)))
+  opaque
+    unfolding _·ₗ_
+
+    ·ₗ-assoc : (x y z : S⁻¹R) → x ·ₗ (y ·ₗ z) ≡ (x ·ₗ y) ·ₗ z
+    ·ₗ-assoc = SQ.elimProp3 (λ _ _ _ → squash/ _ _) ·ₗ-assoc[]
+      where
+      ·ₗ-assoc[] : (a b c : R × S) → [ a ] ·ₗ ([ b ] ·ₗ [ c ]) ≡ ([ a ] ·ₗ [ b ]) ·ₗ [ c ]
+      ·ₗ-assoc[] (r , s , s∈S) (r' , s' , s'∈S) (r'' , s'' , s''∈S) =
+                 cong [_] (ΣPathP ((·Assoc _ _ _) , Σ≡Prop (λ x → ∈-isProp S' x) (·Assoc _ _ _)))
+
+  opaque
+    unfolding _·ₗ_
+
+    ·ₗ-rid : (x : S⁻¹R) → x ·ₗ 1ₗ ≡ x
+    ·ₗ-rid = SQ.elimProp (λ _ → squash/ _ _) ·ₗ-rid[]
+      where
+      ·ₗ-rid[] : (a : R × S) → ([ a ] ·ₗ 1ₗ) ≡ [ a ]
+      ·ₗ-rid[] (r , s , s∈S) = {!!}
+        -- cong [_] (ΣPathP ((·IdR _) , Σ≡Prop (λ x → ∈-isProp S' x) (·IdR _)))
 
 
+ {-
   ·ₗ-rdist-+ₗ : (x y z : S⁻¹R) → x ·ₗ (y +ₗ z) ≡ (x ·ₗ y) +ₗ (x ·ₗ z)
   ·ₗ-rdist-+ₗ = SQ.elimProp3 (λ _ _ _ → squash/ _ _) ·ₗ-rdist-+ₗ[]
     where
@@ -287,3 +326,5 @@ module Loc (R' : CommRing ℓ) (S' : ℙ (fst R')) (SMultClosedSubset : isMultCl
     - S⁻¹RCommRingStr = -ₗ_
     isCommRing S⁻¹RCommRingStr = makeIsCommRing squash/ +ₗ-assoc +ₗ-rid +ₗ-rinv +ₗ-comm
                                                         ·ₗ-assoc ·ₗ-rid ·ₗ-rdist-+ₗ ·ₗ-comm
+ -}
+
