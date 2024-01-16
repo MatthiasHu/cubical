@@ -2,7 +2,7 @@
 -- at a multiplicatively closed subset and show that it
 -- has a commutative ring structure.
 
-{-# OPTIONS --safe --lossy-unification #-}
+{-# OPTIONS --safe #-}
 module Cubical.Algebra.CommRing.Localisation.Base where
 
 open import Cubical.Foundations.Prelude
@@ -280,51 +280,56 @@ module Loc (R' : CommRing ℓ) (S' : ℙ (fst R')) (SMultClosedSubset : isMultCl
                  cong [_] (ΣPathP ((·Assoc _ _ _) , Σ≡Prop (λ x → ∈-isProp S' x) (·Assoc _ _ _)))
 
   opaque
-    unfolding _·ₗ_
+    unfolding _·ₗ_ 1ₗ
 
     ·ₗ-rid : (x : S⁻¹R) → x ·ₗ 1ₗ ≡ x
     ·ₗ-rid = SQ.elimProp (λ _ → squash/ _ _) ·ₗ-rid[]
       where
       ·ₗ-rid[] : (a : R × S) → ([ a ] ·ₗ 1ₗ) ≡ [ a ]
-      ·ₗ-rid[] (r , s , s∈S) = {!!}
-        -- cong [_] (ΣPathP ((·IdR _) , Σ≡Prop (λ x → ∈-isProp S' x) (·IdR _)))
+      ·ₗ-rid[] (r , s , s∈S) =
+        cong [_] (ΣPathP ((·IdR _) , Σ≡Prop (λ x → ∈-isProp S' x) (·IdR _)))
 
 
- {-
-  ·ₗ-rdist-+ₗ : (x y z : S⁻¹R) → x ·ₗ (y +ₗ z) ≡ (x ·ₗ y) +ₗ (x ·ₗ z)
-  ·ₗ-rdist-+ₗ = SQ.elimProp3 (λ _ _ _ → squash/ _ _) ·ₗ-rdist-+ₗ[]
-    where
-    ·ₗ-rdist-+ₗ[] : (a b c : R × S) → [ a ] ·ₗ ([ b ] +ₗ [ c ]) ≡ ([ a ] ·ₗ [ b ]) +ₗ ([ a ] ·ₗ [ c ])
-    ·ₗ-rdist-+ₗ[] (r , s , s∈S) (r' , s' , s'∈S) (r'' , s'' , s''∈S) =
-       eq/ _ _ ((1r , (SMultClosedSubset .containsOne)) , path r s r' s' r'' s'')
-       where
-       -- could be shortened even further
-       path : (r s r' s' r'' s'' : R)
-            → 1r · (r · (r' · s'' + r'' · s')) · (s · s' · (s · s''))
-            ≡ 1r · (r · r' · (s · s'') + r · r'' · (s · s')) · (s · (s' · s''))
-       path = solve R'
+  opaque
+    unfolding _·ₗ_ _+ₗ_
 
-  ·ₗ-comm : (x y : S⁻¹R) → x ·ₗ y ≡ y ·ₗ x
-  ·ₗ-comm = SQ.elimProp2 (λ _ _ → squash/ _ _) ·ₗ-comm[]
-    where
-    ·ₗ-comm[] : (a b : R × S) → [ a ] ·ₗ [ b ] ≡ [ b ] ·ₗ [ a ]
-    ·ₗ-comm[] (r , s , s∈S) (r' , s' , s'∈S) =
-              cong [_] (ΣPathP ((·Comm _ _) , Σ≡Prop (λ x → ∈-isProp S' x) (·Comm _ _)))
+    ·ₗ-rdist-+ₗ : (x y z : S⁻¹R) → x ·ₗ (y +ₗ z) ≡ (x ·ₗ y) +ₗ (x ·ₗ z)
+    ·ₗ-rdist-+ₗ = SQ.elimProp3 (λ _ _ _ → squash/ _ _) ·ₗ-rdist-+ₗ[]
+      where
+      ·ₗ-rdist-+ₗ[] : (a b c : R × S) → [ a ] ·ₗ ([ b ] +ₗ [ c ]) ≡ ([ a ] ·ₗ [ b ]) +ₗ ([ a ] ·ₗ [ c ])
+      ·ₗ-rdist-+ₗ[] (r , s , s∈S) (r' , s' , s'∈S) (r'' , s'' , s''∈S) =
+         eq/ _ _ ((1r , (SMultClosedSubset .containsOne)) , path r s r' s' r'' s'')
+         where
+         -- could be shortened even further
+         path : (r s r' s' r'' s'' : R)
+              → 1r · (r · (r' · s'' + r'' · s')) · (s · s' · (s · s''))
+              ≡ 1r · (r · r' · (s · s'') + r · r'' · (s · s')) · (s · (s' · s''))
+         path = solve R'
+
+  opaque
+    unfolding _·ₗ_
+
+    ·ₗ-comm : (x y : S⁻¹R) → x ·ₗ y ≡ y ·ₗ x
+    ·ₗ-comm = SQ.elimProp2 (λ _ _ → squash/ _ _) ·ₗ-comm[]
+      where
+      ·ₗ-comm[] : (a b : R × S) → [ a ] ·ₗ [ b ] ≡ [ b ] ·ₗ [ a ]
+      ·ₗ-comm[] (r , s , s∈S) (r' , s' , s'∈S) =
+                cong [_] (ΣPathP ((·Comm _ _) , Σ≡Prop (λ x → ∈-isProp S' x) (·Comm _ _)))
 
 
+  opaque
+    unfolding S⁻¹R
 
-  -- Commutative ring structure on S⁻¹R
-  S⁻¹RAsCommRing : CommRing ℓ
-  S⁻¹RAsCommRing = S⁻¹R , S⁻¹RCommRingStr
-    where
-    open CommRingStr
-    S⁻¹RCommRingStr : CommRingStr S⁻¹R
-    0r S⁻¹RCommRingStr = 0ₗ
-    1r S⁻¹RCommRingStr = 1ₗ
-    _+_ S⁻¹RCommRingStr = _+ₗ_
-    _·_ S⁻¹RCommRingStr = _·ₗ_
-    - S⁻¹RCommRingStr = -ₗ_
-    isCommRing S⁻¹RCommRingStr = makeIsCommRing squash/ +ₗ-assoc +ₗ-rid +ₗ-rinv +ₗ-comm
-                                                        ·ₗ-assoc ·ₗ-rid ·ₗ-rdist-+ₗ ·ₗ-comm
- -}
-
+    -- Commutative ring structure on S⁻¹R
+    S⁻¹RAsCommRing : CommRing ℓ
+    S⁻¹RAsCommRing = S⁻¹R , S⁻¹RCommRingStr
+      where
+      open CommRingStr
+      S⁻¹RCommRingStr : CommRingStr S⁻¹R
+      0r S⁻¹RCommRingStr = 0ₗ
+      1r S⁻¹RCommRingStr = 1ₗ
+      _+_ S⁻¹RCommRingStr = _+ₗ_
+      _·_ S⁻¹RCommRingStr = _·ₗ_
+      - S⁻¹RCommRingStr = -ₗ_
+      isCommRing S⁻¹RCommRingStr = makeIsCommRing squash/ +ₗ-assoc +ₗ-rid +ₗ-rinv +ₗ-comm
+                                                          ·ₗ-assoc ·ₗ-rid ·ₗ-rdist-+ₗ ·ₗ-comm
