@@ -1,3 +1,12 @@
+{-
+
+  We construct the punctured plane 𝔸²-0
+  as an open subscheme of the affine scheme 𝔸².
+
+  Note:
+  It would be nice to show that 𝔸²-0 is not an affine scheme.
+
+-}
 
 {-# OPTIONS --safe --lossy-unification #-}
 module Cubical.AlgebraicGeometry.Functorial.ZFunctors.PuncturedPlane where
@@ -41,5 +50,3 @@ private
 
 𝔸²-0-is-scheme : isQcQsScheme 𝔸²-0
 𝔸²-0-is-scheme = isQcQsSchemeCompOpenOfAffine ℤ[X,Y] DX∨DY
-
--- TODO: Prove that 𝔸²-0 is not affine.
