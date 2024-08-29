@@ -10,23 +10,20 @@
 
 module Cubical.Relation.Binary.Order.Preorder.QuotientPoset where
 
--- TODO: clean up imports
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Structure
 
 open import Cubical.Functions.Embedding
-open import Cubical.Functions.Logic
+open import Cubical.Functions.Logic using (⇒∶_⇐∶_)
 
 open import Cubical.HITs.SetQuotients as SQ
   using (_/_)
 
-open import Cubical.Relation.Binary.Base
-open BinaryRelation
+open import Cubical.Relation.Binary.Base using (module BinaryRelation)
+open BinaryRelation using (SymKernel)
 open import Cubical.Relation.Binary.Order.Preorder.Base
 open import Cubical.Relation.Binary.Order.Poset.Base
-
-open import Cubical.Relation.Nullary
 
 private
   variable
