@@ -40,7 +40,7 @@ QuotientPoset {ℓ' = ℓ'} A =
     _≤_
     (isposet
       SQ.squash/
-      (λ x y → isProp≤ x y)
+      isProp≤
       (SQ.elimProp
         (λ x → isProp≤ x x)
         is-refl)
